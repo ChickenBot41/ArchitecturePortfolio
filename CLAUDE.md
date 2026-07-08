@@ -47,8 +47,11 @@ zero. Treat this repo as a learning project, not just a deliverable.
   content; don't hardcode project details into `index.html`.
 - Commit messages: short, imperative, no fluff ("Add dark mode toggle",
   not "Added a dark mode toggle feature for users").
-- Before pushing, tell me what changed in plain language — I'll do the
-  `git push` myself unless I ask you to.
+- Commit finished changes to local git automatically (no need to ask
+  each time), summarizing what changed in plain language.
+- Never run `git push` unless I explicitly ask for it in that moment —
+  pushing to GitHub requires my direct request every time, it is not
+  implied by "commit this" or by a prior push approval.
 
 ## PW (Portfolio Website) rules
 
