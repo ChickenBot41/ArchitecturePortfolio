@@ -73,6 +73,12 @@ I explicitly say to change one.
   body, labels), and Roboto Serif as a sparing complementary accent
   (currently used only for pull-quotes). Do not introduce a third
   font family.
+- **Modular Spacing System** — all margin, padding, and gap values
+  must use one of the `--space-1` through `--space-12` tokens defined
+  in `styles.css` (a scale from 4px to 120px). Never hardcode a raw
+  pixel value for spacing between elements. Border widths and
+  structural component widths (e.g. grid column sizes) are a separate
+  concern and are not part of this scale.
 
 ## Useful skills in this repo
 - `/explain-concept` — deep-dive on the CS/programming idea behind a
