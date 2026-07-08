@@ -50,6 +50,30 @@ zero. Treat this repo as a learning project, not just a deliverable.
 - Before pushing, tell me what changed in plain language — I'll do the
   `git push` myself unless I ask you to.
 
+## PW (Portfolio Website) rules
+
+"PW" is shorthand for this portfolio website, used in conversation and
+below. These rules are permanent — follow them in every session unless
+I explicitly say to change one.
+
+### Page terminology
+- **Home Page Terminology** — the page that loads when the site's URL
+  is opened is always called the "home page."
+- **Project Page Terminology** — the page/view shown when a project
+  title is clicked is always called the "project page."
+
+### Design rules
+- **Sticky Navigation Bar** — a bar must always be fixed to the top of
+  the home page, staying visible while scrolling, containing: the
+  website name, and links to Work, About, and Contact.
+- **Opaque Navigation Bar** — the navigation bar's background must be
+  fully solid (100% opacity) — no page content should show through it.
+- **Two-Font System** — the site uses exactly two font families:
+  Roboto as the primary font (used for nearly everything — headings,
+  body, labels), and Roboto Serif as a sparing complementary accent
+  (currently used only for pull-quotes). Do not introduce a third
+  font family.
+
 ## Useful skills in this repo
 - `/explain-concept` — deep-dive on the CS/programming idea behind a
   piece of code, with an architecture analogy.

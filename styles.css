@@ -15,11 +15,11 @@
   --oxide: #9c4420;
   --white: #f8f6f0;
 
-  /* type */
-  --font-display: "Archivo Expanded", sans-serif;
-  --font-body: "Work Sans", sans-serif;
-  --font-serif: "Source Serif 4", serif;
-  --font-mono: "IBM Plex Mono", monospace;
+  /* type — two-font system: Roboto primary, Roboto Serif as sparing accent */
+  --font-display: "Roboto", sans-serif;
+  --font-body: "Roboto", sans-serif;
+  --font-serif: "Roboto Serif", serif;
+  --font-mono: "Roboto", sans-serif;
 
   /* layout */
   --gutter: clamp(20px, 5vw, 64px);
@@ -91,7 +91,7 @@ ol { padding: 0; list-style: none; }
   align-items: center;
   justify-content: space-between;
   padding: 20px var(--gutter);
-  background: rgba(20, 33, 56, 0.88);
+  background: var(--ink-navy);
   border-bottom: 1px solid var(--blueprint-line-dim);
 }
 
