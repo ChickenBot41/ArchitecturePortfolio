@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Selected Work — Eric Chen</title>
-<meta name="description" content="Full project index by Eric Chen." />
+<title>Project — Eric Chen</title>
+<meta name="description" content="Project detail — Eric Chen, Architecture." />
 
 <!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,33 +31,28 @@
   </button>
 </header>
 
-<!-- ============ WORK INDEX ============ -->
-<section id="work" class="work">
-  <div class="section-head">
-    <p class="section-eyebrow">Index of Drawings</p>
-    <h2 class="section-title">Selected Work</h2>
-  </div>
+<!-- ============ PROJECT DESCRIPTION ============ -->
+<section class="project-hero">
+  <a class="page-cue page-cue--up" href="work.html" aria-label="Back to selected work">
+    <svg width="12" height="20" viewBox="0 0 12 20"><path d="M6 20V2M1 7l5-5 5 5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
+    <span>Selected Work</span>
+  </a>
 
-  <div class="work-layout">
-    <ol id="work-index" class="work-index" aria-label="Project index">
-      <!-- rows injected by main.js -->
-    </ol>
-
-    <div class="work-preview" aria-hidden="true">
-      <div class="preview-frame">
-        <svg id="preview-svg" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg"></svg>
-      </div>
-      <div class="preview-caption">
-        <span id="preview-num">—</span>
-        <span id="preview-status">—</span>
-      </div>
-    </div>
+  <div class="project-hero-inner" id="project-hero-inner">
+    <!-- filled by main.js from PROJECTS, matched via ?id= in the URL -->
   </div>
+</section>
+
+<!-- ============ PROJECT GALLERY ============ -->
+<section class="project-gallery-section">
+  <ul class="project-gallery" id="project-gallery" aria-label="Project photographs">
+    <!-- filled by main.js -->
+  </ul>
 </section>
 
 <footer class="site-footer">
   <span>© <span id="year"></span> Eric Chen Studio</span>
-  <a href="index.html#top">Back to home ↑</a>
+  <a href="work.html">Back to Selected Work ↑</a>
 </footer>
 
 <script src="projects-data.js?v=3"></script>

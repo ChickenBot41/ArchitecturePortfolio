@@ -224,14 +224,6 @@ ol { padding: 0; list-style: none; }
   padding: var(--space-7) var(--gutter); /* aligned to the space-7 baseline grid */
   background: var(--ink-navy);
   border-bottom: 1px solid var(--blueprint-line-dim);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.5s ease;
-}
-
-body.intro-done .site-header {
-  opacity: 1;
-  pointer-events: auto;
 }
 
 .wordmark {
@@ -291,9 +283,26 @@ body.intro-done .site-header {
   justify-content: center;
   overflow: hidden;
   /* top padding aligned to the space-7 (32px) baseline grid — see
-     .hero-eyebrow/.hero-meta below for the rest of the content */
-  padding: calc(var(--space-7) * 4) var(--gutter) var(--space-11);
+     .hero-eyebrow/.hero-meta below for the rest of the content.
+     Left padding gets one extra space-7, shifting the content 32px
+     right of its normal gutter position. */
+  padding: calc(var(--space-7) * 4) var(--gutter) var(--space-11) calc(var(--gutter) + var(--space-7));
   scroll-snap-align: start;
+}
+
+/* At full-screen desktop widths the gutter already resolves to an
+   exact grid multiple (clamp() caps at 64px here), but true vertical
+   centering doesn't — a monitor's height isn't fixed the way "full
+   screen" fixes width, so the center point rarely lands on the grid.
+   Anchoring from a fixed, grid-exact top offset instead guarantees
+   alignment on any screen at this width, at the cost of no longer
+   perfectly re-centering on unusually short/tall monitors. Below this
+   width the original fluid centering is kept. */
+@media (min-width: 1280px) {
+  .hero {
+    justify-content: flex-start;
+    padding-top: calc(var(--space-7) * 5);
+  }
 }
 
 .hero-grid {
@@ -544,6 +553,17 @@ body.intro-done .site-header {
   margin: var(--space-7) 0 0;
 }
 
+.row-project-link {
+  display: inline-block;
+  margin-top: var(--space-7);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.3s ease;
+}
+.row-project-link:hover { border-color: currentColor; }
+
 .spec-table {
   font-family: var(--font-mono);
   font-size: 0.8rem;
@@ -603,17 +623,18 @@ body.intro-done .site-header {
    detailed list (that list still lives on work.html). */
 .gallery {
   position: relative;
-  max-width: var(--max-width);
+  /* exactly wide enough for 3 cards + 2 gaps — the gutter padding is
+     added on top so the visible window always shows precisely three
+     projects, never a peek of a fourth */
+  max-width: calc((var(--space-10) * 6 * 3) + (var(--space-7) * 2) + (var(--gutter) * 2));
   margin: calc(var(--space-7) * 2) auto 0;
   padding: 0 var(--gutter);
+  overflow: hidden;
 }
 
 .gallery-track {
   display: flex;
-  /* "safe" falls back to start-aligned instead of clipping the first
-     card when the row is wider than the viewport and must scroll */
-  justify-content: safe center;
-  gap: var(--space-7);
+  gap: var(--space-7); /* half a grid box (space-10 is a full box) */
   overflow-x: auto;
   /* proximity, not mandatory — this container is nested inside the
      page's own mandatory y-snap, and two mandatory snap containers
@@ -627,7 +648,7 @@ body.intro-done .site-header {
 
 .gallery-card {
   flex: 0 0 auto;
-  width: clamp(270px, 34vw, 420px); /* slightly bigger still, square proportion untouched — see aspect-ratio: 1/1 on the frame */
+  width: calc(var(--space-10) * 6); /* six grid boxes, 384px */
   /* block(y) none, inline(x) start — .gallery-track only sets
      overflow-x, so without the explicit "none" these cards also
      register as snap targets for the page's own vertical scroll,
@@ -636,10 +657,10 @@ body.intro-done .site-header {
 }
 
 .gallery-card-frame {
+  display: block; /* it's an <a>, needs block sizing to fill the card */
   position: relative;
   aspect-ratio: 1 / 1;
-  border: 1px solid var(--charcoal);
-  padding: var(--space-2);
+  /* no border, no padding — the photo bleeds edge-to-edge */
   background: var(--paper);
 }
 
@@ -876,6 +897,129 @@ body.intro-done .site-header {
   color: var(--blueprint-line);
 }
 .contact-footer-bar a:hover { color: var(--white); }
+
+/* =========================================================
+   PROJECT PAGE (project.html)
+   ========================================================= */
+.project-hero {
+  position: relative;
+  background: var(--paper);
+  /* clears the fixed header with room to spare, then the rest of
+     the vertical rhythm below is all space-7 multiples */
+  padding: calc(var(--header-height) + var(--space-7) * 2) 0 calc(var(--space-7) * 3);
+}
+
+.project-hero-inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+.project-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--charcoal-soft);
+}
+
+.project-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2.4rem, 6vw, 5rem);
+  line-height: 0.98;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  margin-top: var(--space-7);
+}
+
+.project-lede {
+  max-width: 720px;
+  margin-top: calc(var(--space-7) * 2);
+  font-size: 1.15rem;
+  line-height: 1.5;
+  color: var(--charcoal);
+}
+
+.project-quote {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.2rem;
+  line-height: 1.5;
+  color: var(--oxide);
+  max-width: 720px;
+  margin: var(--space-7) 0 0;
+  padding-left: var(--space-7);
+  border-left: 2px solid var(--oxide);
+}
+
+.project-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--space-7) * 2);
+  margin-top: calc(var(--space-7) * 2);
+  padding-top: var(--space-7);
+  border-top: 1px solid var(--paper-line);
+}
+.project-meta dt {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--charcoal-soft);
+  margin-bottom: var(--space-3);
+}
+.project-meta dd { margin: 0; font-size: 0.92rem; }
+
+.project-not-found {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: calc(var(--header-height) + var(--space-7) * 4) var(--gutter);
+}
+
+/* Gallery grid: a fixed 256px (8 * space-7) row unit means every
+   size variant below — however many columns/rows it spans — lands
+   exactly on the 32px baseline grid. */
+.project-gallery-section {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--gutter) calc(var(--space-7) * 4);
+}
+
+.project-gallery {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: calc(var(--space-7) * 8);
+  gap: var(--space-7);
+}
+
+.project-gallery-item { overflow: hidden; background: var(--paper-raised); }
+.project-gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.05);
+  display: block;
+}
+
+.project-gallery-item.size-square { grid-column: span 1; grid-row: span 1; }
+.project-gallery-item.size-wide { grid-column: span 2; grid-row: span 1; }
+.project-gallery-item.size-tall { grid-column: span 1; grid-row: span 2; }
+.project-gallery-item.size-large { grid-column: span 2; grid-row: span 2; }
+
+@media (max-width: 900px) {
+  .project-gallery { grid-template-columns: repeat(2, 1fr); }
+  .project-gallery-item.size-wide,
+  .project-gallery-item.size-large { grid-column: span 2; }
+}
+
+@media (max-width: 640px) {
+  .project-gallery { grid-template-columns: 1fr; }
+  .project-gallery-item.size-wide,
+  .project-gallery-item.size-tall,
+  .project-gallery-item.size-large,
+  .project-gallery-item.size-square { grid-column: span 1; grid-row: span 1; }
+}
 
 /* =========================================================
    FOOTER

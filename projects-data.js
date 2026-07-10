@@ -15,6 +15,11 @@
  *   siteArea    – e.g. "1,200 m²"
  *   image       – square placeholder photo URL used by the home page's
  *                 work gallery (swap for real project photography later)
+ *   slug        – URL-safe id used by project.html (project.html?id=slug)
+ *   gallery     – array of { src, size } shown on the project page,
+ *                 scrolling below the description. size is one of
+ *                 "wide" | "tall" | "square" | "large" — see the
+ *                 .project-gallery grid in styles.css
  *   description – 2–4 sentences on the project
  *   quote       – optional short pull-quote about the project's idea
  *   thumb       – inline SVG markup used for the index illustration
@@ -32,6 +37,13 @@ const PROJECTS = [
     program: "Single-family house, ceramics studio",
     siteArea: "3,400 m²",
     image: "https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=900&h=900&q=70",
+    slug: "kiln-house",
+    gallery: [
+      { src: "https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=1200&h=700&q=70", size: "wide" },
+      { src: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=700&h=1000&q=70", size: "tall" },
+      { src: "https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=900&h=900&q=70", size: "square" },
+      { src: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=1000&h=550&q=70", size: "wide" },
+    ],
     description:
       "A rammed-earth house organized around a working kiln. The plan splits living quarters from the studio with a firebreak courtyard, so the ritual of firing pottery is visible from the kitchen table.",
     quote: "The hearth moved outside, and the house grew around it.",
@@ -64,6 +76,13 @@ const PROJECTS = [
     program: "Public library annex, reading hall, archive",
     siteArea: "980 m²",
     image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=900&h=900&q=70",
+    slug: "riverside-reading-room",
+    gallery: [
+      { src: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1200&h=700&q=70", size: "wide" },
+      { src: "https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=700&h=1000&q=70", size: "tall" },
+      { src: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=900&h=900&q=70", size: "square" },
+      { src: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1000&h=550&q=70", size: "wide" },
+    ],
     description:
       "A single-span timber hall cantilevered over the flood line. Structure and shelving are the same system — glulam ribs widen into reading nooks, then narrow again to hold the roof.",
     quote: "The books needed a room that could flood beneath them.",
@@ -96,6 +115,13 @@ const PROJECTS = [
     program: "Maternal health clinic, waiting court, staff housing",
     siteArea: "2,100 m²",
     image: "https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=900&h=900&q=70",
+    slug: "courtyard-clinic",
+    gallery: [
+      { src: "https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=1200&h=700&q=70", size: "wide" },
+      { src: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=700&h=1000&q=70", size: "tall" },
+      { src: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=900&h=900&q=70", size: "square" },
+      { src: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1000&h=550&q=70", size: "wide" },
+    ],
     description:
       "An L-shaped clinic wrapped around a shaded waiting court. Cross-ventilation replaces mechanical cooling; the deep veranda is the actual waiting room, and the enclosed spaces are reserved for exams.",
     quote: "The corridor is the clinic. Everything else is a room off it.",
@@ -124,6 +150,13 @@ const PROJECTS = [
     program: "Tea pavilion and garden threshold",
     siteArea: "140 m²",
     image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=900&h=900&q=70",
+    slug: "threshold-pavilion",
+    gallery: [
+      { src: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=1200&h=700&q=70", size: "wide" },
+      { src: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=700&h=1000&q=70", size: "tall" },
+      { src: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=900&h=900&q=70", size: "square" },
+      { src: "https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=1000&h=550&q=70", size: "wide" },
+    ],
     description:
       "A single deep eave held on four columns, sized to the act of removing one's shoes. The roof plane tilts a half-degree toward the garden so rain becomes part of the approach sequence.",
     quote: "One roof, four columns, and a half-degree of weather.",
@@ -154,6 +187,13 @@ const PROJECTS = [
     program: "Six live-work units, shared roof garden",
     siteArea: "1,850 m²",
     image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=900&h=900&q=70",
+    slug: "terraced-studios",
+    gallery: [
+      { src: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&h=700&q=70", size: "wide" },
+      { src: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=700&h=1000&q=70", size: "tall" },
+      { src: "https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=900&h=900&q=70", size: "square" },
+      { src: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1000&h=550&q=70", size: "wide" },
+    ],
     description:
       "Six studios stepped up a hillside so every unit keeps a private terrace and a view line to the valley. Structure is exposed concrete frame; infill walls are left to each tenant to finish.",
     quote: "The section did the planning. The plan just followed it downhill.",
@@ -184,6 +224,13 @@ const PROJECTS = [
     program: "Grain silo converted to co-working exchange, café",
     siteArea: "1,100 m² (existing structure)",
     image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=900&h=900&q=70",
+    slug: "silo-exchange",
+    gallery: [
+      { src: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&h=700&q=70", size: "wide" },
+      { src: "https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=700&h=1000&q=70", size: "tall" },
+      { src: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=900&h=900&q=70", size: "square" },
+      { src: "https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=1000&h=550&q=70", size: "wide" },
+    ],
     description:
       "Twelve concrete silos re-cored into a vertical circulation spine, with floor plates threaded between the untouched shells. The original hopper geometry sets the ceiling height on every level.",
     quote: "We didn't add a building. We subtracted one from inside a bigger one.",

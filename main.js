@@ -24,6 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupPreviewPanel();
   renderWorkGallery();
   setupGalleryArrows();
+  renderProjectPage();
   setupMobileNav();
   document.getElementById("year").textContent = new Date().getFullYear();
 });
@@ -205,6 +206,7 @@ function renderWorkIndex() {
           <div>
             <p>${project.description}</p>
             ${project.quote ? `<blockquote>${project.quote}</blockquote>` : ""}
+            <a class="row-project-link" href="project.html?id=${project.slug}">View full project →</a>
           </div>
           <dl class="spec-table">
             <div><dt>Status</dt><dd>${project.status}</dd></div>
@@ -275,34 +277,89 @@ function showPreview(index) {
 
 /* ---------- Work gallery (home page) ---------- */
 
-// One card module per project — square photo, name bottom-left,
-// date bottom-right — reused identically for every entry so the
-// gallery reads as one cohesive system rather than one-off layouts.
+// One card module per project — full-bleed square photo, name
+// bottom-left, date bottom-right — reused identically for every
+// entry so the gallery reads as one cohesive system.
+function buildGalleryCard(project, isClone) {
+  const card = document.createElement("li");
+  card.className = "gallery-card";
+  // Clones exist only to give the loop room to scroll into — hide
+  // them from screen readers so each project is only announced once.
+  if (isClone) card.setAttribute("aria-hidden", "true");
+  const tabindex = isClone ? ' tabindex="-1"' : "";
+  card.innerHTML = `
+    <a class="gallery-card-frame" href="project.html?id=${project.slug}"${tabindex}>
+      <div class="gallery-card-photo">
+        <img src="${project.image}" alt="${project.title}" loading="lazy" />
+        <div class="gallery-card-caption">
+          <span class="gallery-card-name">${project.title}</span>
+          <span class="gallery-card-date">${project.year}</span>
+        </div>
+      </div>
+    </a>
+  `;
+  return card;
+}
+
+// Width of one card plus one gap — the unit the loop and the arrow
+// buttons both move by. Measured from the live DOM/CSS rather than
+// duplicated as a magic number, so it never drifts out of sync with
+// the actual card size or gap defined in styles.css.
+function getGalleryStep(track) {
+  const firstCard = track.children[0];
+  if (!firstCard) return track.clientWidth;
+  const gap = parseFloat(getComputedStyle(track).columnGap || getComputedStyle(track).gap || "0");
+  return firstCard.getBoundingClientRect().width + gap;
+}
+
 function renderWorkGallery() {
   const track = document.getElementById("work-gallery");
   if (!track || typeof PROJECTS === "undefined") return;
 
-  PROJECTS.forEach((project) => {
-    const card = document.createElement("li");
-    card.className = "gallery-card";
-    card.innerHTML = `
-      <div class="gallery-card-frame">
-        <div class="gallery-card-photo">
-          <img src="${project.image}" alt="${project.title}" loading="lazy" />
-          <div class="gallery-card-caption">
-            <span class="gallery-card-name">${project.title}</span>
-            <span class="gallery-card-date">${project.year}</span>
-          </div>
-        </div>
-      </div>
-    `;
-    track.appendChild(card);
+  // Three back-to-back copies of the project list give an infinite
+  // loop in either direction: the visible view starts in the middle
+  // copy, and drifting into either neighboring copy silently resets
+  // back into the equivalent spot in the middle one (see
+  // setupInfiniteGalleryLoop), so there's always more to scroll to.
+  [0, 1, 2].forEach((copy) => {
+    PROJECTS.forEach((project) => track.appendChild(buildGalleryCard(project, copy !== 1)));
+  });
+
+  setupInfiniteGalleryLoop(track);
+}
+
+// Keeps the track scrolled somewhere within a generous safe zone
+// centered on the middle copy of cards — [0.5, 2.5] list-widths, i.e.
+// the middle copy plus a half-copy buffer on either side. Only once a
+// scroll (dragging, the wheel, or the arrow buttons) actually crosses
+// out of that buffer does it jump silently (no animation) back by one
+// list-width, so the loop never runs out in either direction.
+//
+// The buffer matters: thresholds sitting exactly at the middle copy's
+// own edges (1x/2x) fire the instant you scroll away from the very
+// first or last card in it, cancelling the click before it can even
+// animate — that's what made "prev" look stuck on the first project.
+// A half-copy of breathing room on each side means correction only
+// ever fires deep into a neighboring copy, never on the click that
+// just crossed into it.
+function setupInfiniteGalleryLoop(track) {
+  const oneListWidth = getGalleryStep(track) * PROJECTS.length;
+  track.scrollLeft = oneListWidth;
+
+  track.addEventListener("scroll", () => {
+    if (track.scrollLeft < oneListWidth * 0.5) {
+      track.style.scrollBehavior = "auto";
+      track.scrollLeft += oneListWidth;
+      requestAnimationFrame(() => { track.style.scrollBehavior = ""; });
+    } else if (track.scrollLeft > oneListWidth * 2.5) {
+      track.style.scrollBehavior = "auto";
+      track.scrollLeft -= oneListWidth;
+      requestAnimationFrame(() => { track.style.scrollBehavior = ""; });
+    }
   });
 }
 
-// Arrow buttons scroll the track by roughly one viewport-width of
-// cards at a time — native scroll-snap handles settling each card
-// into place, this just gives it a nudge in either direction.
+// Arrow buttons scroll exactly one card (plus its gap) at a time.
 function setupGalleryArrows() {
   const gallery = document.querySelector(".gallery");
   const track = document.getElementById("work-gallery");
@@ -310,9 +367,8 @@ function setupGalleryArrows() {
   const next = gallery ? gallery.querySelector(".gallery-arrow--next") : null;
   if (!gallery || !track || !prev || !next) return;
 
-  const scrollByAmount = () => track.clientWidth * 0.8;
-  prev.addEventListener("click", () => track.scrollBy({ left: -scrollByAmount(), behavior: "smooth" }));
-  next.addEventListener("click", () => track.scrollBy({ left: scrollByAmount(), behavior: "smooth" }));
+  prev.addEventListener("click", () => track.scrollBy({ left: -getGalleryStep(track), behavior: "smooth" }));
+  next.addEventListener("click", () => track.scrollBy({ left: getGalleryStep(track), behavior: "smooth" }));
 
   // Many browsers redirect a plain vertical wheel gesture into
   // horizontal scroll for horizontal-only overflow elements like this
@@ -330,6 +386,59 @@ function setupGalleryArrows() {
     },
     { passive: false }
   );
+}
+
+/* ---------- Project page (project.html) ---------- */
+
+// project.html is one template shared by every project — the actual
+// content comes from PROJECTS, matched via the ?id= slug in the URL.
+// This keeps projects-data.js the single source of truth instead of
+// hand-writing six near-identical HTML files.
+function renderProjectPage() {
+  const heroInner = document.getElementById("project-hero-inner");
+  const galleryList = document.getElementById("project-gallery");
+  if (!heroInner || typeof PROJECTS === "undefined") return;
+
+  const slug = new URLSearchParams(location.search).get("id");
+  const project = PROJECTS.find((p) => p.slug === slug);
+
+  if (!project) {
+    document.querySelector(".project-hero").innerHTML = `
+      <div class="project-not-found">
+        <p class="project-eyebrow">Not found</p>
+        <h1 class="project-title">No project here</h1>
+        <p class="project-lede">
+          <a href="work.html">Back to Selected Work →</a>
+        </p>
+      </div>
+    `;
+    if (galleryList) galleryList.remove();
+    return;
+  }
+
+  document.title = `${project.title} — Eric Chen`;
+
+  heroInner.innerHTML = `
+    <p class="project-eyebrow">${project.num} — ${project.typology} — ${project.year}</p>
+    <h1 class="project-title">${project.title}</h1>
+    <p class="project-lede">${project.description}</p>
+    ${project.quote ? `<blockquote class="project-quote">${project.quote}</blockquote>` : ""}
+    <dl class="project-meta">
+      <div><dt>Status</dt><dd>${project.status}</dd></div>
+      <div><dt>Program</dt><dd>${project.program}</dd></div>
+      <div><dt>Site area</dt><dd>${project.siteArea}</dd></div>
+      <div><dt>Location</dt><dd>${project.location}</dd></div>
+    </dl>
+  `;
+
+  if (galleryList && Array.isArray(project.gallery)) {
+    project.gallery.forEach((photo) => {
+      const item = document.createElement("li");
+      item.className = `project-gallery-item size-${photo.size}`;
+      item.innerHTML = `<img src="${photo.src}" alt="${project.title}" loading="lazy" />`;
+      galleryList.appendChild(item);
+    });
+  }
 }
 
 /* ---------- Mobile nav ---------- */
