@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Selected Work — Eric Chen</title>
+<meta name="description" content="Full project index by Eric Chen." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;800&family=Roboto+Serif:ital,wght@1,400;1,500&display=swap" rel="stylesheet">
+
+<!-- ?v= is a manual cache-buster: bump it whenever styles.css, main.js, or projects-data.js
+     change, since the local dev server doesn't send cache headers and
+     browsers will otherwise keep serving a stale copy. -->
+<link rel="stylesheet" href="styles.css?v=38" />
+</head>
+<body class="intro-done">
+
+<!-- ============ HEADER ============ -->
+<header class="site-header">
+  <a href="index.html" class="wordmark">Eric Chen</a>
+  <nav class="site-nav">
+    <a href="work.html">Work</a>
+    <a href="index.html#about">About</a>
+    <a href="index.html#contact">Contact</a>
+  </nav>
+  <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<!-- ============ WORK INDEX ============ -->
+<section id="work" class="work">
+  <div class="section-head">
+    <p class="section-eyebrow">Index of Drawings</p>
+    <h2 class="section-title">Selected Work</h2>
+  </div>
+
+  <div class="work-layout">
+    <ol id="work-index" class="work-index" aria-label="Project index">
+      <!-- rows injected by main.js -->
+    </ol>
+
+    <div class="work-preview" aria-hidden="true">
+      <div class="preview-frame">
+        <svg id="preview-svg" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+      <div class="preview-caption">
+        <span id="preview-num">—</span>
+        <span id="preview-status">—</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <span>© <span id="year"></span> Eric Chen Studio</span>
+  <a href="index.html#top">Back to home ↑</a>
+</footer>
+
+<script src="projects-data.js?v=2"></script>
+<script src="main.js?v=15"></script>
+</body>
+</html>
