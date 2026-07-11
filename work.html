@@ -14,7 +14,7 @@
 <!-- ?v= is a manual cache-buster: bump it whenever styles.css, main.js, or projects-data.js
      change, since the local dev server doesn't send cache headers and
      browsers will otherwise keep serving a stale copy. -->
-<link rel="stylesheet" href="styles.css?v=43" />
+<link rel="stylesheet" href="styles.css?v=93" />
 </head>
 <body class="intro-done">
 
@@ -32,27 +32,51 @@
 </header>
 
 <!-- ============ WORK INDEX ============ -->
-<section id="work" class="work">
+<section id="work" class="work-page">
   <div class="section-head">
     <p class="section-eyebrow">Index of Drawings</p>
     <h2 class="section-title">Selected Work</h2>
   </div>
 
   <div class="work-layout">
-    <ol id="work-index" class="work-index" aria-label="Project index">
-      <!-- rows injected by main.js -->
-    </ol>
-
-    <div class="work-preview" aria-hidden="true">
-      <div class="preview-frame">
-        <svg id="preview-svg" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg"></svg>
-      </div>
-      <div class="preview-caption">
-        <span id="preview-num">—</span>
-        <span id="preview-status">—</span>
+    <div class="work-layout-overlay" aria-hidden="true">
+      <div class="work-layout-overlay-col work-layout-overlay-col--list">
+        <span class="work-layout-overlay-label">Gallery column</span>
       </div>
     </div>
+
+    <ul id="work-photo-grid" class="work-photo-grid" aria-label="Project gallery">
+      <!-- cards injected by main.js -->
+    </ul>
   </div>
+
+  <div class="work-preview" aria-hidden="true">
+    <div class="preview-frame">
+      <svg id="preview-svg" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div class="preview-caption">
+      <span id="preview-num">—</span>
+      <span id="preview-status">—</span>
+    </div>
+  </div>
+
+  <!-- labeled 32px alignment grid, injected/positioned by
+       setupAlignmentGridLabels() in main.js since the label count
+       depends on the page's actual rendered size -->
+  <div class="alignment-grid-overlay" id="alignment-grid-overlay" aria-hidden="true">
+    <div class="alignment-grid-lines"></div>
+    <div class="alignment-grid-col-labels" id="alignment-grid-col-labels"></div>
+    <div class="alignment-grid-row-labels" id="alignment-grid-row-labels"></div>
+  </div>
+
+  <button
+    type="button"
+    id="work-layout-overlay-toggle"
+    class="work-layout-overlay-toggle"
+    aria-pressed="false"
+  >
+    Show grid
+  </button>
 </section>
 
 <footer class="site-footer">
@@ -61,6 +85,6 @@
 </footer>
 
 <script src="projects-data.js?v=3"></script>
-<script src="main.js?v=19"></script>
+<script src="main.js?v=35"></script>
 </body>
 </html>

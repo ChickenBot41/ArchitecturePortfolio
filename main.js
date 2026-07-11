@@ -20,12 +20,17 @@ document.addEventListener("DOMContentLoaded", () => {
   window.scrollTo(0, 0);
   syncHeaderHeight();
   setupIntroAnimation();
-  renderWorkIndex();
+  renderWorkPhotoGrid();
   setupPreviewPanel();
   renderWorkGallery();
   setupGalleryArrows();
   renderProjectPage();
   setupMobileNav();
+  setupWorkLayoutOverlayToggle();
+  setupAlignmentGridLabels();
+  alignPreviewToGridColumn();
+  alignGalleryToGridColumn();
+  alignWorkPageElementsToGrid();
   document.getElementById("year").textContent = new Date().getFullYear();
 });
 
@@ -183,58 +188,22 @@ function runIntroSequence({ isReplay }) {
   }, totalMs + 150);
 }
 
-/* ---------- Work index ---------- */
+/* ---------- Work photo grid ---------- */
 
-function renderWorkIndex() {
-  const list = document.getElementById("work-index");
-  if (!list || typeof PROJECTS === "undefined") return;
+// Replaces the old text list entirely — a 3-column photo grid
+// reusing the exact same card module as the home page's gallery
+// (buildGalleryCard, defined below), just laid out in a plain fluid
+// grid instead of a horizontal infinite-loop carousel. Hovering any
+// card swaps the blueprint preview panel (see showPreview()) — the
+// same interaction the old list rows used to trigger on hover.
+function renderWorkPhotoGrid() {
+  const grid = document.getElementById("work-photo-grid");
+  if (!grid || typeof PROJECTS === "undefined") return;
 
   PROJECTS.forEach((project, index) => {
-    const row = document.createElement("li");
-    row.className = "work-row";
-    row.dataset.index = String(index);
-
-    row.innerHTML = `
-      <button class="row-summary" style="all:unset; display:contents; cursor:pointer;" aria-expanded="false">
-        <span class="row-num">${project.num}</span>
-        <span class="row-title">${project.title}</span>
-        <span class="row-typology">${project.typology}</span>
-        <span class="row-year">${project.year}</span>
-      </button>
-      <div class="row-detail">
-        <div class="row-detail-inner">
-          <div>
-            <p>${project.description}</p>
-            ${project.quote ? `<blockquote>${project.quote}</blockquote>` : ""}
-            <a class="row-project-link" href="project.html?id=${project.slug}">View full project →</a>
-          </div>
-          <dl class="spec-table">
-            <div><dt>Status</dt><dd>${project.status}</dd></div>
-            <div><dt>Program</dt><dd>${project.program}</dd></div>
-            <div><dt>Site area</dt><dd>${project.siteArea}</dd></div>
-            <div><dt>Location</dt><dd>${project.location}</dd></div>
-          </dl>
-        </div>
-      </div>
-    `;
-
-    // Click to expand / collapse this row's detail panel
-    row.querySelector(".row-summary").addEventListener("click", () => {
-      const isOpen = row.classList.contains("is-open");
-      list.querySelectorAll(".work-row.is-open").forEach((openRow) => {
-        openRow.classList.remove("is-open");
-        openRow.querySelector(".row-summary").setAttribute("aria-expanded", "false");
-      });
-      if (!isOpen) {
-        row.classList.add("is-open");
-        row.querySelector(".row-summary").setAttribute("aria-expanded", "true");
-      }
-    });
-
-    // Hover to swap the blueprint preview panel (desktop)
-    row.addEventListener("mouseenter", () => showPreview(index));
-
-    list.appendChild(row);
+    const card = buildGalleryCard(project, false);
+    card.addEventListener("mouseenter", () => showPreview(index));
+    grid.appendChild(card);
   });
 
   // Prime the preview panel with the first project
@@ -244,17 +213,9 @@ function renderWorkIndex() {
 /* ---------- Preview panel ---------- */
 
 function setupPreviewPanel() {
-  const list = document.getElementById("work-index");
-  if (!list) return;
-  list.addEventListener("mouseleave", () => {
-    const openIndex = getOpenIndex();
-    showPreview(openIndex !== null ? openIndex : 0);
-  });
-}
-
-function getOpenIndex() {
-  const openRow = document.querySelector(".work-row.is-open");
-  return openRow ? Number(openRow.dataset.index) : null;
+  const grid = document.getElementById("work-photo-grid");
+  if (!grid) return;
+  grid.addEventListener("mouseleave", () => showPreview(0));
 }
 
 function showPreview(index) {
@@ -458,6 +419,206 @@ function setupMobileNav() {
       nav.classList.remove("is-open");
       toggle.setAttribute("aria-expanded", "false");
     });
+  });
+}
+
+/* ---------- Work layout column + alignment grid overlay (work.html) ---------- */
+
+// Excel-style column naming: 0->A, 25->Z, 26->AA, 27->AB, etc. —
+// used for the alignment grid's column labels once there are more
+// than 26 of them (a wide, zoomed-out screen easily needs more).
+function numberToLetters(n) {
+  let label = "";
+  let num = n;
+  do {
+    label = String.fromCharCode(65 + (num % 26)) + label;
+    num = Math.floor(num / 26) - 1;
+  } while (num >= 0);
+  return label;
+}
+
+// Builds the labeled 32px grid's column-letter / row-number tags,
+// sized to the page's actual rendered dimensions (not just the
+// viewport) — the list can be any length, so the label count is
+// computed live rather than hardcoded. Safe to call again on resize.
+function setupAlignmentGridLabels() {
+  const workPage = document.querySelector(".work-page");
+  const colHost = document.getElementById("alignment-grid-col-labels");
+  const rowHost = document.getElementById("alignment-grid-row-labels");
+  if (!workPage || !colHost || !rowHost) return;
+
+  const GRID_STEP = 32; // matches --space-7
+
+  const buildLabels = () => {
+    colHost.innerHTML = "";
+    rowHost.innerHTML = "";
+
+    const cols = Math.ceil(workPage.scrollWidth / GRID_STEP);
+    const rows = Math.ceil(workPage.scrollHeight / GRID_STEP);
+
+    for (let i = 0; i < cols; i++) {
+      const label = document.createElement("span");
+      label.className = "alignment-grid-label";
+      label.style.left = `${i * GRID_STEP}px`;
+      label.style.top = "0px";
+      label.textContent = numberToLetters(i);
+      colHost.appendChild(label);
+    }
+
+    for (let i = 0; i < rows; i++) {
+      const label = document.createElement("span");
+      label.className = "alignment-grid-label";
+      label.style.left = "0px";
+      label.style.top = `${i * GRID_STEP}px`;
+      label.textContent = String(i + 1);
+      rowHost.appendChild(label);
+    }
+  };
+
+  buildLabels();
+  window.addEventListener("resize", buildLabels);
+}
+
+// Snaps .work-preview's right edge onto a specific lettered column
+// line of the alignment grid ("AY") instead of an arbitrary fluid
+// offset. Column letters run A-Z (0-25), then AA, AB… (26+) — "AY" is
+// the 51st line, index 50 (26 + the 24 letters from A to Y). Measured
+// live with getBoundingClientRect() rather than a fixed calc(),
+// since the grid's fluid column widths mean the pixel position of
+// "AY" moves as the viewport resizes — a plain CSS value can't track
+// that, only a live measurement can.
+function alignPreviewToGridColumn() {
+  const workPage = document.querySelector(".work-page");
+  const preview = document.querySelector(".work-preview");
+  if (!workPage || !preview) return;
+
+  const GRID_STEP = 32; // matches --space-7
+  const AY_COLUMN_INDEX = 50; // A=0 … Z=25, AA=26 … AY=50
+
+  const alignToColumn = () => {
+    // .work-preview is display:none below the 1400px breakpoint —
+    // getBoundingClientRect() on a hidden element returns all zeros,
+    // which would otherwise compute a nonsense offset; skip until
+    // it's actually visible again.
+    if (getComputedStyle(preview).display === "none") return;
+
+    const pageRect = workPage.getBoundingClientRect();
+    const targetRightEdgeX = pageRect.left + AY_COLUMN_INDEX * GRID_STEP;
+
+    const previewRect = preview.getBoundingClientRect();
+    const currentMarginRight = parseFloat(getComputedStyle(preview).marginRight) || 0;
+    const delta = previewRect.right - targetRightEdgeX;
+
+    preview.style.marginRight = `${currentMarginRight + delta}px`;
+  };
+
+  alignToColumn();
+  window.addEventListener("resize", alignToColumn);
+}
+
+// Snaps the leftmost edge of .work-photo-grid onto lettered column
+// "E" of the alignment grid (index 4: A=0, B=1, C=2, D=3, E=4) —
+// same live-measurement approach as alignPreviewToGridColumn(), for
+// the same reason: the grid's column widths are fluid, so a fixed
+// calc() can't reliably land on an arbitrary lettered line.
+function alignGalleryToGridColumn() {
+  const workPage = document.querySelector(".work-page");
+  const gallery = document.querySelector(".work-photo-grid");
+  if (!workPage || !gallery) return;
+
+  const GRID_STEP = 32; // matches --space-7
+  const E_COLUMN_INDEX = 4; // A=0, B=1, C=2, D=3, E=4
+
+  const alignToColumn = () => {
+    const pageRect = workPage.getBoundingClientRect();
+    const targetLeftEdgeX = pageRect.left + E_COLUMN_INDEX * GRID_STEP;
+
+    const galleryRect = gallery.getBoundingClientRect();
+    const currentMarginLeft = parseFloat(getComputedStyle(gallery).marginLeft) || 0;
+    const delta = targetLeftEdgeX - galleryRect.left;
+
+    gallery.style.marginLeft = `${currentMarginLeft + delta}px`;
+  };
+
+  alignToColumn();
+  window.addEventListener("resize", alignToColumn);
+}
+
+// Snaps four more elements onto specific lettered/numbered alignment
+// grid lines, the same live-measured way as the two functions above
+// (margin, not top/left/right — a sticky element's inset properties
+// only define its scroll-stuck threshold, they don't shift its
+// static/resting position the way margin does; see
+// alignPreviewToGridColumn()'s notes on justify-self for the
+// horizontal-axis version of this same lesson):
+//   - .section-head: left edge -> column E, bottom edge -> row 10
+//   - .work-photo-grid: top edge -> row 12
+//   - .work-preview: top edge -> row 12
+function alignWorkPageElementsToGrid() {
+  const workPage = document.querySelector(".work-page");
+  const sectionHead = document.querySelector(".section-head");
+  const gallery = document.querySelector(".work-photo-grid");
+  const preview = document.querySelector(".work-preview");
+  if (!workPage) return;
+
+  const GRID_STEP = 32; // matches --space-7
+  const E_COLUMN_INDEX = 4; // A=0, B=1, C=2, D=3, E=4
+  const ROW_10_INDEX = 9; // row label "10" sits at i=9 (labels are 1-based)
+  const ROW_12_INDEX = 11; // row label "12" sits at i=11
+
+  const nudgeMargin = (el, property, currentValue, targetValue) => {
+    const current = parseFloat(getComputedStyle(el)[property]) || 0;
+    el.style[property] = `${current + (targetValue - currentValue)}px`;
+  };
+
+  const align = () => {
+    const pageRect = workPage.getBoundingClientRect();
+
+    if (sectionHead) {
+      const targetLeftX = pageRect.left + E_COLUMN_INDEX * GRID_STEP;
+      const targetBottomY = pageRect.top + ROW_10_INDEX * GRID_STEP;
+      const headRect = sectionHead.getBoundingClientRect();
+      nudgeMargin(sectionHead, "marginLeft", headRect.left, targetLeftX);
+      // re-measure after the horizontal nudge — a left shift alone
+      // shouldn't move the bottom edge, but the two are set via
+      // separate inline styles, so measuring fresh avoids relying on
+      // that assumption
+      const headRectAfter = sectionHead.getBoundingClientRect();
+      nudgeMargin(sectionHead, "marginTop", headRectAfter.bottom, targetBottomY);
+    }
+
+    const targetTopY = pageRect.top + ROW_12_INDEX * GRID_STEP;
+
+    if (gallery) {
+      const galleryRect = gallery.getBoundingClientRect();
+      nudgeMargin(gallery, "marginTop", galleryRect.top, targetTopY);
+    }
+
+    if (preview) {
+      const previewRect = preview.getBoundingClientRect();
+      nudgeMargin(preview, "marginTop", previewRect.top, targetTopY);
+    }
+  };
+
+  align();
+  window.addEventListener("resize", align);
+}
+
+// Lets the "Show grid" button flip both overlays on/off together —
+// .work-layout-overlay (where the two real grid columns start/end)
+// and the labeled 32px alignment grid — as one combined debugging
+// aid, without needing DevTools open.
+function setupWorkLayoutOverlayToggle() {
+  const button = document.getElementById("work-layout-overlay-toggle");
+  const columnOverlay = document.querySelector(".work-layout-overlay");
+  const gridOverlay = document.getElementById("alignment-grid-overlay");
+  if (!button || !columnOverlay || !gridOverlay) return;
+
+  button.addEventListener("click", () => {
+    const isVisible = columnOverlay.classList.toggle("is-visible");
+    gridOverlay.classList.toggle("is-visible", isVisible);
+    button.setAttribute("aria-pressed", String(isVisible));
+    button.textContent = isVisible ? "Hide grid" : "Show grid";
   });
 }
 
