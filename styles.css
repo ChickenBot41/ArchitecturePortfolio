@@ -1,7 +1,33 @@
+/* Registers --site-unit as a typed <length> instead of a plain,
+   untyped custom property. This matters for one specific reason:
+   JavaScript reading an unregistered custom property via
+   getComputedStyle() always gets back the literal specified text
+   (e.g. the string "clamp(20px, 1.6vw, 40px)"), never the resolved
+   pixel value the browser actually renders with — even though the
+   browser itself correctly resolves it for CSS purposes like width
+   or gap. Registering it here makes getComputedStyle() return the
+   real used pixel value instead, which is what getSiteUnit() in
+   main.js depends on for the grid-snapping math.
+
+   Originally scoped to work.html only (as --work-unit); now defined
+   on :root so the same fluid module scale can be shared site-wide —
+   currently used by work.html and the home page's non-intro
+   sections (Hero, Work, About, Contact). */
+@property --site-unit {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 32px;
+}
+
 /* =========================================================
    TOKENS
    ========================================================= */
 :root {
+  /* fluid base unit — every "N units" size (gallery cards, the
+     work.html preview panel, alignment-grid spacing) multiplies this
+     one value instead of each having its own independently-tuned
+     clamp()/vw rate */
+  --site-unit: clamp(20px, 1.6vw, 40px);
   /* color — black & white palette */
   --ink-navy: #1a1a1a;
   --ink-navy-deep: #000000;
@@ -91,6 +117,24 @@ body {
   font-size: 16px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
+}
+
+/* work.html-only fix: when .work-page's content is shorter than the
+   viewport (a short gallery on a tall/wide screen), nothing normally
+   pushes .site-footer down to the actual bottom of the screen — it
+   just sits wherever the content ends, leaving a blank gap below it
+   where <html>'s background (transparent, falling through to the
+   browser's default white) shows through instead of it reading as
+   part of the page. Scoped via :has() so only work.html (the only
+   page with a .work-page) gets this flex treatment, not index.html
+   or project.html. */
+body:has(.work-page) {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+body:has(.work-page) .work-page {
+  flex: 1;
 }
 
 /* Page-wide space-7 (32px) alignment grid — hidden by design (opacity
@@ -325,41 +369,21 @@ ol { padding: 0; list-style: none; }
   }
 }
 
-.hero-grid {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(var(--blueprint-line-dim) 1px, transparent 1px),
-    linear-gradient(90deg, var(--blueprint-line-dim) 1px, transparent 1px);
-  background-size: var(--space-10) var(--space-10);
-  opacity: 0;
-  animation: gridFadeIn 1.6s ease forwards 0.2s;
-  pointer-events: none;
-}
-
-@keyframes gridFadeIn {
-  to { opacity: 1; }
-}
-
-/* Same --space-10 blueprint grid used in .hero-grid/.contact-grid,
-   reused on Work and About — in red, to read as a distinct accent
-   rather than the neutral blueprint lines on the dark sections. */
-.section-grid {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(var(--grid-red) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-red) 1px, transparent 1px);
-  background-size: var(--space-10) var(--space-10);
-  opacity: 0.2;
-  pointer-events: none;
-}
-
-.hero-inner {
-  position: relative;
-  max-width: var(--max-width);
-  margin: 0 auto;
+/* .hero-inner removed — the eyebrow/title/sub/meta are now four
+   direct children of .hero (which is already display:flex;
+   flex-direction:column). Capped at the same max-width the old
+   wrapper used, but flush-left (margin-left: 0, not auto) — .hero-sub
+   has its own narrower max-width (480px) for readable line length,
+   and centering it here (auto margins) would visibly shift it out of
+   alignment with the other three, full-width elements. */
+.hero-eyebrow,
+.hero-title,
+.hero-sub,
+.hero-meta {
   width: 100%;
+  max-width: var(--max-width);
+  margin-left: 0;
+  margin-right: auto;
 }
 
 .hero-eyebrow {
@@ -492,31 +516,23 @@ ol { padding: 0; list-style: none; }
   margin: calc(var(--space-7) * 2) auto 0;
   padding: 0 var(--gutter) 0 var(--content-left-gutter);
   display: grid;
-  /* preview column now has a 12 grid-unit (384px) floor via minmax —
-     when the gallery column's content forces it wider, the preview
-     column can shrink to make room, but never below this minimum,
-     so .work-preview can't get squeezed down arbitrarily small */
-  grid-template-columns: 1.4fr minmax(calc(var(--space-7) * 12), 1fr);
-  gap: calc(var(--space-7) * 2);
+  grid-template-columns: 1fr;
   align-items: start;
 }
 
 /* work.html-only: a toggleable overlay showing exactly where
-   .work-layout's two real grid columns (the 1.4fr list column and
-   the 1fr preview column) start and end, plus the gap between them —
-   answers a different question than the 32px spacing grid does
-   (that one shows spacing rhythm; this shows this one container's
-   actual column structure). Mirrors .work-layout's own grid template
-   exactly, so its two child strips land precisely on the real
-   column boundaries. Hidden by default; toggled by
+   .work-layout's real grid column starts and ends — answers a
+   different question than the 32px spacing grid does (that one
+   shows spacing rhythm; this shows this one container's actual
+   column structure). Mirrors .work-layout's own grid template
+   exactly. Hidden by default; toggled by
    setupWorkLayoutOverlayToggle() in main.js adding/removing
    .is-visible via the "Show grid" button. */
 .work-layout-overlay {
   position: absolute;
   inset: 0;
   display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: calc(var(--space-7) * 2);
+  grid-template-columns: 1fr;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease;
@@ -577,7 +593,10 @@ ol { padding: 0; list-style: none; }
   background-image:
     linear-gradient(rgba(225, 29, 46, 0.4) 1px, transparent 1px),
     linear-gradient(90deg, rgba(225, 29, 46, 0.4) 1px, transparent 1px);
-  background-size: var(--space-7) var(--space-7);
+  /* --site-unit (fluid), not the fixed --space-7 — the grid itself
+     scales along with everything sized in units, so elements keep
+     landing on grid lines at any screen size */
+  background-size: var(--site-unit) var(--site-unit);
 }
 
 .alignment-grid-col-labels,
@@ -585,6 +604,47 @@ ol { padding: 0; list-style: none; }
   position: absolute;
   inset: 0;
 }
+
+/* Home page (index.html) equivalent of .alignment-grid-overlay —
+   deliberately lighter-weight (just the line pattern, no lettered
+   column/row labels like work.html's version) since it's repeated
+   across four sections here rather than one long scrolling page.
+   Added to Hero, Work, About, Contact only — never to
+   #intro-animation, so the falling-block sequence stays undisturbed.
+   Toggled by the single "Show grid" button (#home-grid-toggle) via
+   setupHomeGridToggle() in main.js. */
+.home-grid-overlay {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(225, 29, 46, 0.4) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(225, 29, 46, 0.4) 1px, transparent 1px);
+  background-size: var(--site-unit) var(--site-unit);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 5;
+}
+
+.home-grid-overlay.is-visible { opacity: 1; }
+
+.home-grid-toggle {
+  position: fixed;
+  right: var(--space-7);
+  bottom: var(--space-7);
+  z-index: 200;
+  padding: var(--space-3) var(--space-5);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--white);
+  background: var(--charcoal);
+  border: 1px solid var(--charcoal);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+.home-grid-toggle:hover { background: var(--oxide); }
 
 .alignment-grid-label {
   position: absolute;
@@ -631,13 +691,6 @@ ol { padding: 0; list-style: none; }
 
 .work-page .work-layout {
   margin-top: calc(var(--space-7) * 2);
-  /* wider than the shared --max-width (1240px) — the fixed-size
-     gallery (832px) plus the preview column's 12-grid-unit floor
-     (384px) plus the gap between them (64px) need ~1280px of content
-     width alone, before padding; without this, the two columns
-     together overflow past .work-layout's right edge, causing a
-     site-wide horizontal scrollbar */
-  max-width: calc(var(--max-width) + var(--space-7) * 8);
 }
 
 /* work.html-only left gutter — a fluid clamp(), same 5vw scaling
@@ -667,13 +720,14 @@ ol { padding: 0; list-style: none; }
 /* Replaces the old text list entirely — a 3-column photo grid,
    reusing the exact same .gallery-card module (image, name/date
    caption, black-to-color hover) as the home page's carousel, just
-   laid out in a plain grid instead of a horizontal scroller. Fixed
-   256px (4 grid-box) squares — bigger than the original fluid ~166px
-   columns — with a plain space-7 (32px) gap between them. */
+   laid out in a plain grid instead of a horizontal scroller. Sized in
+   --site-unit (8 units per card, 1 unit gap) instead of the fixed
+   --space-10, so the cards grow/shrink fluidly with the same one
+   scale everything else on this page uses. */
 .work-photo-grid {
   display: grid;
-  grid-template-columns: repeat(3, calc(var(--space-10) * 4));
-  gap: var(--space-7);
+  grid-template-columns: repeat(3, calc(var(--site-unit) * 8));
+  gap: var(--site-unit);
   /* frees this from the grid's default "stretch" alignment, which
      otherwise rigidly pins a grid item to fill its column and
      silently ignores margin adjustments entirely — same issue
@@ -688,43 +742,34 @@ ol { padding: 0; list-style: none; }
 
 .work-photo-grid .gallery-card { width: 100%; }
 
-/* preview panel (desktop only, non-interactive decoration) — sticky
-   so it tracks the viewport as the list scrolls (stays in view, then
-   scrolls away normally once the list runs out), rather than sitting
-   fixed at a single spot in the page's total height. Sized to fill
-   its own grid column's actual width (width: 100%) instead of a
-   fixed 576px footprint pulled past the column's edge — so the
-   visible box now genuinely fits within its column, matching the
-   .work-layout-overlay-col--preview outline's plain column shape. */
+/* preview panel (desktop only, non-interactive decoration) — no
+   longer a grid column: an independent element, positioned entirely
+   via its own sticky offset + JS-driven margins (see
+   alignPreviewToGridColumn() / alignWorkPageElementsToGrid() in
+   main.js), so it isn't tied to sharing space with the gallery. Sized
+   as a straight multiple of --site-unit (16 units) instead of its own
+   separate clamp()/vw rate — since --site-unit is itself already
+   fluid, multiplying it automatically gives this a min/max range too,
+   without needing a second, independently-tuned fluid formula.
+   16 units (not 24) deliberately leaves clearance from the gallery:
+   the gallery spans ~26 units starting at column E (4), ending
+   around unit 30; the preview's right edge is anchored to column AY
+   (unit 50), so a 16-unit width puts its left edge at unit 34 — a
+   4-unit gap after the gallery, instead of overlapping it. */
 .work-preview {
   position: sticky;
   /* pushed further down from the header than before (space-7 * 4
      instead of * 2) */
   top: calc(var(--header-height) + var(--space-7) * 4);
-  /* required for margin-right to actually move this box — a grid
-     item's default alignment ("stretch") rigidly pins it to fill its
-     column edge-to-edge, silently ignoring margin/left/right entirely.
-     justify-self: end frees it from that so the margin-right value
-     set by alignPreviewToGridColumn() in main.js actually takes
-     effect (confirmed empirically: with stretch, changing margin-right
-     produced zero visual movement; with "end", it worked immediately) */
-  justify-self: end;
   /* fallback before JS runs — actual value is computed and set
      inline by alignPreviewToGridColumn() in main.js, since landing
      the right edge on an exact lettered grid line (column "AY")
      isn't expressible as a fixed calc() once fluid column widths are
-     involved; it has to be measured live */
-  margin-right: 0;
-  width: 100%;
-  /* never grows past a 14x14 grid-box footprint (896px) */
-  max-width: calc(var(--space-10) * 14);
-  /* always a perfect square — height follows width automatically, so
-     as the column (and therefore width) shrinks with the viewport,
-     height scales down to match instead of staying a fixed number.
-     No separate min-width is set: the column's own share of
-     .work-layout's grid (1.4fr list / 1fr preview) is what naturally
-     floors how small this gets, so it stays proportionate to the
-     list column instead of an arbitrary independent minimum */
+     involved; it has to be measured live. margin-left (not
+     margin-right) is what actually shifts this box now that it's a
+     plain left-anchored block element, not a grid item. */
+  margin-left: 0;
+  width: calc(var(--site-unit) * 16);
   aspect-ratio: 1 / 1;
   display: flex;
   flex-direction: column;
@@ -771,8 +816,9 @@ ol { padding: 0; list-style: none; }
   position: relative;
   /* exactly wide enough for 3 cards + 2 gaps — the gutter/content-inset
      padding is added on top so the visible window always shows
-     precisely three projects, never a peek of a fourth */
-  max-width: calc((var(--space-10) * 6 * 3) + (var(--space-7) * 2) + var(--gutter) + var(--content-left-gutter));
+     precisely three projects, never a peek of a fourth. Card width
+     is now fluid (--site-unit * 14), so this formula must match it. */
+  max-width: calc((var(--site-unit) * 14 * 3) + (var(--space-7) * 2) + var(--gutter) + var(--content-left-gutter));
   /* space-7 * 2 (64px) — fine here; "avoid 64px lines" only applies
      to Hero/Contact */
   margin: calc(var(--space-7) * 2) auto 0;
@@ -796,7 +842,10 @@ ol { padding: 0; list-style: none; }
 
 .gallery-card {
   flex: 0 0 auto;
-  width: calc(var(--space-10) * 6); /* six grid boxes, 384px */
+  /* fluid (--site-unit * 14, ~384px at a typical desktop width)
+     instead of a fixed six grid-box (384px) size, so the cards scale
+     with the viewport the same way work.html's gallery does */
+  width: calc(var(--site-unit) * 14);
   /* block(y) none, inline(x) start — .gallery-track only sets
      overflow-x, so without the explicit "none" these cards also
      register as snap targets for the page's own vertical scroll,
@@ -911,7 +960,23 @@ ol { padding: 0; list-style: none; }
   gap: var(--space-10);
 }
 
-.about-portrait { color: var(--charcoal-soft); align-self: start; }
+.about-portrait {
+  align-self: start;
+  /* matches the old SVG line-drawing's 300x360 (5:6) proportions, so
+     the grid layout/sizing around it doesn't need to change */
+  aspect-ratio: 300 / 360;
+  overflow: hidden;
+  border: 1px solid var(--charcoal);
+}
+
+.about-portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* grayscale to match the site's black-and-white palette — same
+     treatment as the gallery card photos elsewhere */
+  filter: grayscale(1) contrast(1.05);
+}
 
 .about-lede {
   font-family: var(--font-display);
@@ -967,19 +1032,6 @@ ol { padding: 0; list-style: none; }
   padding: calc(var(--space-7) * 5 - 0.36rem) var(--gutter) var(--space-11) var(--content-left-gutter);
   overflow: hidden;
   scroll-snap-align: start;
-}
-
-.contact-grid {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(var(--blueprint-line-dim) 1px, transparent 1px),
-    linear-gradient(90deg, var(--blueprint-line-dim) 1px, transparent 1px);
-  background-size: var(--space-10) var(--space-10);
-  opacity: 0.5;
-  /* purely decorative — must never intercept clicks meant for
-     content stacked below it, like the "About" cue arrow */
-  pointer-events: none;
 }
 
 .contact-inner {
@@ -1064,6 +1116,17 @@ ol { padding: 0; list-style: none; }
   color: var(--blueprint-line);
 }
 .contact-footer-bar a:hover { color: var(--white); }
+
+/* pulled out of the footer bar's normal flex flow and pinned above
+   the "Show grid" toggle button (fixed bottom-right, --space-7 from
+   the edges) — space-7 * 4 clears the button's own height plus
+   breathing room, so they stack vertically instead of overlapping */
+.contact-back-to-top {
+  position: fixed;
+  right: var(--space-7);
+  bottom: calc(var(--space-7) * 4);
+  z-index: 200;
+}
 
 /* =========================================================
    PROJECT PAGE (project.html)

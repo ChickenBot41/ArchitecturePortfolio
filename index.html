@@ -14,7 +14,7 @@
 <!-- ?v= is a manual cache-buster: bump it whenever styles.css, main.js, or projects-data.js
      change, since the local dev server doesn't send cache headers and
      browsers will otherwise keep serving a stale copy. -->
-<link rel="stylesheet" href="styles.css?v=93" />
+<link rel="stylesheet" href="styles.css?v=110" />
 </head>
 <body>
 
@@ -41,20 +41,20 @@
 
 <!-- ============ HERO ============ -->
 <section id="top" class="hero">
-  <div class="hero-grid" aria-hidden="true"></div>
-  <div class="hero-inner">
-    <p class="hero-eyebrow">Architecture &amp; Spatial Design — Est. 2015</p>
-    <h1 class="hero-title">Eric<br />Chen</h1>
-    <p class="hero-sub">
-      Buildings drawn from how a place already works — light, water,
-      material, weather — before anything is added to it.
-    </p>
-    <dl class="hero-meta">
-      <div><dt>Based</dt><dd>Lisbon, Portugal</dd></div>
-      <div><dt>Scope</dt><dd>Residential — Civic — Cultural</dd></div>
-      <div><dt>Sheet</dt><dd>001 / 006</dd></div>
-    </dl>
-  </div>
+  <div class="home-grid-overlay" aria-hidden="true"></div>
+
+  <p class="hero-eyebrow">Architecture &amp; Spatial Design — Est. 2015</p>
+  <h1 class="hero-title">Eric<br />Chen</h1>
+  <p class="hero-sub">
+    Buildings drawn from how a place already works — light, water,
+    material, weather — before anything is added to it.
+  </p>
+  <dl class="hero-meta">
+    <div><dt>Based</dt><dd>Lisbon, Portugal</dd></div>
+    <div><dt>Scope</dt><dd>Residential — Civic — Cultural</dd></div>
+    <div><dt>Sheet</dt><dd>001 / 006</dd></div>
+  </dl>
+
   <a class="scroll-cue" href="#work" aria-label="Scroll to selected work">
     <span>Selected Work</span>
     <svg width="12" height="20" viewBox="0 0 12 20"><path d="M6 0v18M1 13l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
@@ -63,7 +63,7 @@
 
 <!-- ============ WORK INDEX ============ -->
 <section id="work" class="work">
-  <div class="section-grid" aria-hidden="true"></div>
+  <div class="home-grid-overlay" aria-hidden="true"></div>
   <a class="page-cue page-cue--up" href="#top" aria-label="Back to home page">
     <svg width="12" height="20" viewBox="0 0 12 20"><path d="M6 20V2M1 7l5-5 5 5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
     <span>Home Page</span>
@@ -94,7 +94,7 @@
 
 <!-- ============ ABOUT ============ -->
 <section id="about" class="about">
-  <div class="section-grid" aria-hidden="true"></div>
+  <div class="home-grid-overlay" aria-hidden="true"></div>
   <a class="page-cue page-cue--up" href="#work" aria-label="Back to selected work">
     <svg width="12" height="20" viewBox="0 0 12 20"><path d="M6 20V2M1 7l5-5 5 5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
     <span>Selected Work</span>
@@ -106,14 +106,8 @@
   </div>
 
   <div class="about-layout">
-    <div class="about-portrait" aria-hidden="true">
-      <svg viewBox="0 0 300 360" xmlns="http://www.w3.org/2000/svg">
-        <rect x="10" y="10" width="280" height="340" fill="none" stroke="currentColor" stroke-width="1"/>
-        <path d="M60 300 L150 90 L240 300 Z" fill="none" stroke="currentColor" stroke-width="1.2"/>
-        <line x1="60" y1="300" x2="240" y2="300" stroke="currentColor" stroke-width="1.2"/>
-        <line x1="30" y1="300" x2="30" y2="90" stroke="currentColor" stroke-width="0.6" stroke-dasharray="3 5"/>
-        <line x1="150" y1="60" x2="150" y2="90" stroke="currentColor" stroke-width="0.6"/>
-      </svg>
+    <div class="about-portrait">
+      <img src="eric-chen-portrait.jpeg" alt="Portrait of Eric Chen" />
     </div>
 
     <div class="about-copy">
@@ -157,7 +151,7 @@
     <svg width="12" height="20" viewBox="0 0 12 20"><path d="M6 20V2M1 7l5-5 5 5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
     <span>About</span>
   </a>
-  <div class="contact-grid" aria-hidden="true"></div>
+  <div class="home-grid-overlay" aria-hidden="true"></div>
   <div class="contact-inner">
     <p class="section-eyebrow contact-eyebrow">Title Block</p>
     <h2 class="contact-title">Start a<br />conversation</h2>
@@ -185,12 +179,21 @@
   </div>
 
   <div class="contact-footer-bar">
-    <span>© <span id="year"></span> Eric Chen Studio</span>
-    <a href="#top">Back to top ↑</a>
+    <span class="contact-footer-copyright">© <span id="year"></span> Eric Chen Studio</span>
+    <a href="#top" class="contact-back-to-top">Back to top ↑</a>
   </div>
 </section>
 
+<button
+  type="button"
+  id="home-grid-toggle"
+  class="home-grid-toggle"
+  aria-pressed="false"
+>
+  Show grid
+</button>
+
 <script src="projects-data.js?v=3"></script>
-<script src="main.js?v=35"></script>
+<script src="main.js?v=56"></script>
 </body>
 </html>

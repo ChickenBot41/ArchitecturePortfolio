@@ -26,11 +26,24 @@ document.addEventListener("DOMContentLoaded", () => {
   setupGalleryArrows();
   renderProjectPage();
   setupMobileNav();
+  alignWordmarkToGridColumn();
   setupWorkLayoutOverlayToggle();
-  setupAlignmentGridLabels();
+  // These three run before the label builder — they reposition
+  // .work-preview and .work-photo-grid via margin (pulling the
+  // preview panel up to overlap the gallery instead of stacking
+  // below it). setupAlignmentGridLabels() measures .work-page's
+  // final rendered height to build its row labels; running it first
+  // measured the page while .work-preview still sat in its default
+  // stacked position — full extra height, not yet pulled up — which
+  // baked that inflated height into the (never-rebuilt) label
+  // positions and kept the document scrollable well past the real
+  // content and the footer.
   alignPreviewToGridColumn();
   alignGalleryToGridColumn();
   alignWorkPageElementsToGrid();
+  setupAlignmentGridLabels();
+  setupHomeGridToggle();
+  alignHomeSectionsToGrid();
   document.getElementById("year").textContent = new Date().getFullYear();
 });
 
@@ -422,6 +435,38 @@ function setupMobileNav() {
   });
 }
 
+/* ---------- Header wordmark (every page) ---------- */
+
+// Snaps "Eric Chen" in the fixed header onto lettered column E
+// (index 4) of the fluid --site-unit grid — same live-measured
+// margin-left technique used everywhere else in this file. .wordmark
+// is a flex child of .site-header, so (unlike the CSS Grid "stretch"
+// issue solved elsewhere) a plain margin-left works here without
+// needing any extra override — flex layout doesn't have that quirk.
+// Runs on every page, since the header markup is identical on all of
+// them and .site-header spans the full viewport width starting at
+// its own left edge (position: fixed; left: 0), so no section
+// reference is needed the way work.html's/home page's snaps needed
+// their own section's bounding rect.
+function alignWordmarkToGridColumn() {
+  const wordmark = document.querySelector(".wordmark");
+  if (!wordmark) return;
+
+  const E_COLUMN_INDEX = 4; // A=0, B=1, C=2, D=3, E=4
+
+  const align = () => {
+    const GRID_STEP = getSiteUnit(document.documentElement);
+    const targetLeftX = E_COLUMN_INDEX * GRID_STEP;
+
+    const wordmarkRect = wordmark.getBoundingClientRect();
+    const currentMarginLeft = parseFloat(getComputedStyle(wordmark).marginLeft) || 0;
+    wordmark.style.marginLeft = `${currentMarginLeft + (targetLeftX - wordmarkRect.left)}px`;
+  };
+
+  align();
+  window.addEventListener("resize", align);
+}
+
 /* ---------- Work layout column + alignment grid overlay (work.html) ---------- */
 
 // Excel-style column naming: 0->A, 25->Z, 26->AA, 27->AB, etc. —
@@ -437,7 +482,16 @@ function numberToLetters(n) {
   return label;
 }
 
-// Builds the labeled 32px grid's column-letter / row-number tags,
+// Reads --site-unit's live computed pixel value off any element (it's
+// defined on :root, so it inherits everywhere) — the grid step is
+// fluid (a clamp(), see :root in styles.css), so this can't be a
+// fixed constant like the old GRID_STEP = 32; it has to be re-read
+// each time, since it changes as the viewport resizes.
+function getSiteUnit(el) {
+  return parseFloat(getComputedStyle(el).getPropertyValue("--site-unit")) || 32;
+}
+
+// Builds the labeled fluid grid's column-letter / row-number tags,
 // sized to the page's actual rendered dimensions (not just the
 // viewport) — the list can be any length, so the label count is
 // computed live rather than hardcoded. Safe to call again on resize.
@@ -447,9 +501,8 @@ function setupAlignmentGridLabels() {
   const rowHost = document.getElementById("alignment-grid-row-labels");
   if (!workPage || !colHost || !rowHost) return;
 
-  const GRID_STEP = 32; // matches --space-7
-
   const buildLabels = () => {
+    const GRID_STEP = getSiteUnit(workPage);
     colHost.innerHTML = "";
     rowHost.innerHTML = "";
 
@@ -480,20 +533,19 @@ function setupAlignmentGridLabels() {
 }
 
 // Snaps .work-preview's right edge onto a specific lettered column
-// line of the alignment grid ("AY") instead of an arbitrary fluid
-// offset. Column letters run A-Z (0-25), then AA, AB… (26+) — "AY" is
-// the 51st line, index 50 (26 + the 24 letters from A to Y). Measured
-// live with getBoundingClientRect() rather than a fixed calc(),
-// since the grid's fluid column widths mean the pixel position of
-// "AY" moves as the viewport resizes — a plain CSS value can't track
-// that, only a live measurement can.
+// line of the alignment grid ("BC") instead of an arbitrary fluid
+// offset. Column letters run A-Z (0-25), then AA, AB… (26+), then
+// BA, BB, BC… (52+) — "BC" is index 54 (52 + the 2 letters from A to
+// C). Measured live with getBoundingClientRect() rather than a fixed
+// calc(), since the grid's fluid column widths mean the pixel
+// position of "BC" moves as the viewport resizes — a plain CSS value
+// can't track that, only a live measurement can.
 function alignPreviewToGridColumn() {
   const workPage = document.querySelector(".work-page");
   const preview = document.querySelector(".work-preview");
   if (!workPage || !preview) return;
 
-  const GRID_STEP = 32; // matches --space-7
-  const AY_COLUMN_INDEX = 50; // A=0 … Z=25, AA=26 … AY=50
+  const BC_COLUMN_INDEX = 54; // A=0 … Z=25, AA=26 … AZ=51, BA=52, BB=53, BC=54
 
   const alignToColumn = () => {
     // .work-preview is display:none below the 1400px breakpoint —
@@ -502,14 +554,21 @@ function alignPreviewToGridColumn() {
     // it's actually visible again.
     if (getComputedStyle(preview).display === "none") return;
 
+    const GRID_STEP = getSiteUnit(workPage);
     const pageRect = workPage.getBoundingClientRect();
-    const targetRightEdgeX = pageRect.left + AY_COLUMN_INDEX * GRID_STEP;
+    const targetRightEdgeX = pageRect.left + BC_COLUMN_INDEX * GRID_STEP;
 
     const previewRect = preview.getBoundingClientRect();
-    const currentMarginRight = parseFloat(getComputedStyle(preview).marginRight) || 0;
-    const delta = previewRect.right - targetRightEdgeX;
+    // .work-preview is now a plain block box (no longer a grid item
+    // with justify-self: end), so it's left-anchored by default —
+    // margin-left shifts its rendered position, margin-right no
+    // longer does anything (confirmed empirically: changing
+    // margin-right produced zero movement once it left the grid;
+    // margin-left moved it immediately).
+    const currentMarginLeft = parseFloat(getComputedStyle(preview).marginLeft) || 0;
+    const delta = targetRightEdgeX - previewRect.right;
 
-    preview.style.marginRight = `${currentMarginRight + delta}px`;
+    preview.style.marginLeft = `${currentMarginLeft + delta}px`;
   };
 
   alignToColumn();
@@ -517,8 +576,9 @@ function alignPreviewToGridColumn() {
 }
 
 // Snaps the leftmost edge of .work-photo-grid onto lettered column
-// "E" of the alignment grid (index 4: A=0, B=1, C=2, D=3, E=4) —
-// same live-measurement approach as alignPreviewToGridColumn(), for
+// "H" of the alignment grid (index 7: A=0, B=1, C=2, D=3, E=4, F=5,
+// G=6, H=7) — same live-measurement approach as
+// alignPreviewToGridColumn(), for
 // the same reason: the grid's column widths are fluid, so a fixed
 // calc() can't reliably land on an arbitrary lettered line.
 function alignGalleryToGridColumn() {
@@ -526,12 +586,12 @@ function alignGalleryToGridColumn() {
   const gallery = document.querySelector(".work-photo-grid");
   if (!workPage || !gallery) return;
 
-  const GRID_STEP = 32; // matches --space-7
-  const E_COLUMN_INDEX = 4; // A=0, B=1, C=2, D=3, E=4
+  const H_COLUMN_INDEX = 7; // A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7
 
   const alignToColumn = () => {
+    const GRID_STEP = getSiteUnit(workPage);
     const pageRect = workPage.getBoundingClientRect();
-    const targetLeftEdgeX = pageRect.left + E_COLUMN_INDEX * GRID_STEP;
+    const targetLeftEdgeX = pageRect.left + H_COLUMN_INDEX * GRID_STEP;
 
     const galleryRect = gallery.getBoundingClientRect();
     const currentMarginLeft = parseFloat(getComputedStyle(gallery).marginLeft) || 0;
@@ -551,7 +611,8 @@ function alignGalleryToGridColumn() {
 // static/resting position the way margin does; see
 // alignPreviewToGridColumn()'s notes on justify-self for the
 // horizontal-axis version of this same lesson):
-//   - .section-head: left edge -> column E, bottom edge -> row 10
+//   - .section-head: left edge -> column H (A=0, B=1, C=2, D=3, E=4,
+//     F=5, G=6, H=7), bottom edge -> row 10
 //   - .work-photo-grid: top edge -> row 12
 //   - .work-preview: top edge -> row 12
 function alignWorkPageElementsToGrid() {
@@ -561,8 +622,7 @@ function alignWorkPageElementsToGrid() {
   const preview = document.querySelector(".work-preview");
   if (!workPage) return;
 
-  const GRID_STEP = 32; // matches --space-7
-  const E_COLUMN_INDEX = 4; // A=0, B=1, C=2, D=3, E=4
+  const H_COLUMN_INDEX = 7; // A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7
   const ROW_10_INDEX = 9; // row label "10" sits at i=9 (labels are 1-based)
   const ROW_12_INDEX = 11; // row label "12" sits at i=11
 
@@ -572,17 +632,27 @@ function alignWorkPageElementsToGrid() {
   };
 
   const align = () => {
+    const GRID_STEP = getSiteUnit(workPage);
     const pageRect = workPage.getBoundingClientRect();
 
     if (sectionHead) {
-      const targetLeftX = pageRect.left + E_COLUMN_INDEX * GRID_STEP;
-      const targetBottomY = pageRect.top + ROW_10_INDEX * GRID_STEP;
+      // .section-head has its own padding-left (a fluid clamp, see
+      // .work-page .section-head in styles.css) — snapping the box's
+      // own left edge to column H would still leave the actual
+      // visible text sitting padding-left further right, looking
+      // unaligned even though the box technically lines up. Target
+      // where the text starts (box left + padding-left) instead.
+      const paddingLeft = parseFloat(getComputedStyle(sectionHead).paddingLeft) || 0;
+      const targetTextStartX = pageRect.left + H_COLUMN_INDEX * GRID_STEP;
+      const targetBoxLeftX = targetTextStartX - paddingLeft;
       const headRect = sectionHead.getBoundingClientRect();
-      nudgeMargin(sectionHead, "marginLeft", headRect.left, targetLeftX);
+      nudgeMargin(sectionHead, "marginLeft", headRect.left, targetBoxLeftX);
+
       // re-measure after the horizontal nudge — a left shift alone
       // shouldn't move the bottom edge, but the two are set via
       // separate inline styles, so measuring fresh avoids relying on
       // that assumption
+      const targetBottomY = pageRect.top + ROW_10_INDEX * GRID_STEP;
       const headRectAfter = sectionHead.getBoundingClientRect();
       nudgeMargin(sectionHead, "marginTop", headRectAfter.bottom, targetBottomY);
     }
@@ -620,5 +690,108 @@ function setupWorkLayoutOverlayToggle() {
     button.setAttribute("aria-pressed", String(isVisible));
     button.textContent = isVisible ? "Hide grid" : "Show grid";
   });
+}
+
+/* ---------- Home page (index.html) fluid grid ---------- */
+
+// Lets the "Show grid" button on the home page flip every
+// .home-grid-overlay on/off at once — one toggle for all four
+// sections (Hero, Work, About, Contact), rather than one per
+// section. #intro-animation never gets an overlay, so it's
+// unaffected either way.
+function setupHomeGridToggle() {
+  const button = document.getElementById("home-grid-toggle");
+  const overlays = document.querySelectorAll(".home-grid-overlay");
+  if (!button || overlays.length === 0) return;
+
+  button.addEventListener("click", () => {
+    const isVisible = !overlays[0].classList.contains("is-visible");
+    overlays.forEach((overlay) => overlay.classList.toggle("is-visible", isVisible));
+    button.setAttribute("aria-pressed", String(isVisible));
+    button.textContent = isVisible ? "Hide grid" : "Show grid";
+  });
+}
+
+// Snaps the Hero/Work/About/Contact sections' primary content blocks
+// onto grid column E (index 4 — same convention as work.html), the
+// same live-measured margin-left technique used throughout this
+// file. Hero's four elements (eyebrow, title, sub, meta) are included
+// here at the user's explicit request — this overrides Hero's
+// previous exclusion (it has its own bespoke, carefully-tuned
+// --content-left-gutter/"avoid 64px lines" alignment rules from
+// earlier in the project, which this snap now takes priority over
+// for the left edge specifically).
+function alignHomeSectionsToGrid() {
+  const E_COLUMN_INDEX = 4; // A=0, B=1, C=2, D=3, E=4
+  const H_COLUMN_INDEX = 7; // A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7
+
+  // Class selectors (.work, .about, .contact), not #work/#about/
+  // #contact — work.html's own section also happens to use id="work",
+  // so an ID-based query here was unintentionally also matching (and
+  // re-snapping) work.html's .section-head after its own H-column
+  // snap had already run, since main.js is shared across pages and
+  // this function runs on every page unconditionally. The home
+  // page's sections use these classes uniquely; work.html's
+  // equivalent section uses .work-page instead.
+  const targets = [
+    { section: document.querySelector(".hero"), el: document.querySelector(".hero-eyebrow") },
+    // -3px optical correction: Roboto at weight 800 (this heading) has
+    // more built-in left side-bearing than the lighter weights used by
+    // the other three Hero elements, so a mathematically-identical
+    // left edge reads as visually shifted right — the box/text-layout
+    // measurements match exactly (confirmed via getBoundingClientRect
+    // and Range.getClientRects()), but the actual ink doesn't. This
+    // nudges just the bold heading left to compensate, by eye rather
+    // than by calculation.
+    { section: document.querySelector(".hero"), el: document.querySelector(".hero-title"), opticalAdjust: -3 },
+    { section: document.querySelector(".hero"), el: document.querySelector(".hero-sub") },
+    { section: document.querySelector(".hero"), el: document.querySelector(".hero-meta") },
+    // index.html's Work section only — left snapped to column H
+    // instead of the shared column E the other home-page sections use.
+    // Targets .gallery-track (the actual card-holding element)
+    // specifically, not the outer .gallery wrapper — the prev/next
+    // .gallery-arrow buttons are separate, absolutely-positioned
+    // siblings inside that wrapper and are deliberately left alone.
+    { section: document.querySelector(".work"), el: document.querySelector(".work .section-head"), columnIndex: H_COLUMN_INDEX },
+    { section: document.querySelector(".work"), el: document.querySelector(".work .gallery-track"), columnIndex: H_COLUMN_INDEX },
+    // About's section head and portrait — both snapped to column H
+    // (the portrait's visible left edge, not just .about-layout's box
+    // edge, since the padding-left-aware math below already accounts
+    // for .about-layout's own padding-left, which is exactly where
+    // the portrait starts)
+    { section: document.querySelector(".about"), el: document.querySelector(".about .section-head"), columnIndex: H_COLUMN_INDEX },
+    { section: document.querySelector(".about"), el: document.querySelector(".about .about-layout"), columnIndex: H_COLUMN_INDEX },
+    { section: document.querySelector(".contact"), el: document.querySelector(".contact .contact-inner") },
+    { section: document.querySelector(".contact"), el: document.querySelector(".contact-footer-copyright") },
+  ].filter((t) => t.section && t.el);
+
+  if (targets.length === 0) return;
+
+  const align = () => {
+    targets.forEach(({ section, el, opticalAdjust = 0, columnIndex = E_COLUMN_INDEX }) => {
+      const GRID_STEP = getSiteUnit(section);
+      const sectionRect = section.getBoundingClientRect();
+      // Target where the VISIBLE content starts, not just the box's
+      // own edge — .section-head (and anything else with its own
+      // padding-left, e.g. the shared clamp() on .section-head) would
+      // otherwise have its box aligned to the grid while the actual
+      // text sits padding-left further right, looking unaligned even
+      // though the box technically lines up (same issue already
+      // solved for work.html's .section-head in
+      // alignWorkPageElementsToGrid()). Harmless for elements with no
+      // padding-left (it's just 0), so this applies safely to every
+      // target uniformly.
+      const paddingLeft = parseFloat(getComputedStyle(el).paddingLeft) || 0;
+      const targetContentStartX = sectionRect.left + columnIndex * GRID_STEP + opticalAdjust;
+      const targetLeftX = targetContentStartX - paddingLeft;
+
+      const elRect = el.getBoundingClientRect();
+      const currentMarginLeft = parseFloat(getComputedStyle(el).marginLeft) || 0;
+      el.style.marginLeft = `${currentMarginLeft + (targetLeftX - elRect.left)}px`;
+    });
+  };
+
+  align();
+  window.addEventListener("resize", align);
 }
 
