@@ -39,12 +39,6 @@
   </div>
 
   <div class="work-layout">
-    <div class="work-layout-overlay" aria-hidden="true">
-      <div class="work-layout-overlay-col work-layout-overlay-col--list">
-        <span class="work-layout-overlay-label">Gallery column</span>
-      </div>
-    </div>
-
     <ul id="work-photo-grid" class="work-photo-grid" aria-label="Project gallery">
       <!-- cards injected by main.js -->
     </ul>
@@ -59,24 +53,6 @@
       <span id="preview-status">—</span>
     </div>
   </div>
-
-  <!-- labeled 32px alignment grid, injected/positioned by
-       setupAlignmentGridLabels() in main.js since the label count
-       depends on the page's actual rendered size -->
-  <div class="alignment-grid-overlay" id="alignment-grid-overlay" aria-hidden="true">
-    <div class="alignment-grid-lines"></div>
-    <div class="alignment-grid-col-labels" id="alignment-grid-col-labels"></div>
-    <div class="alignment-grid-row-labels" id="alignment-grid-row-labels"></div>
-  </div>
-
-  <button
-    type="button"
-    id="work-layout-overlay-toggle"
-    class="work-layout-overlay-toggle"
-    aria-pressed="false"
-  >
-    Show grid
-  </button>
 </section>
 
 <footer class="site-footer">

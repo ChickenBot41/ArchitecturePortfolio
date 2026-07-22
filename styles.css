@@ -24,9 +24,8 @@
    ========================================================= */
 :root {
   /* fluid base unit — every "N units" size (gallery cards, the
-     work.html preview panel, alignment-grid spacing) multiplies this
-     one value instead of each having its own independently-tuned
-     clamp()/vw rate */
+     work.html preview panel) multiplies this one value instead of
+     each having its own independently-tuned clamp()/vw rate */
   --site-unit: clamp(20px, 1.6vw, 40px);
   /* color — black & white palette */
   --ink-navy: #1a1a1a;
@@ -95,6 +94,12 @@ html {
   scroll-behavior: smooth;
   scroll-snap-type: y mandatory;
   scroll-padding-top: var(--header-height);
+  /* Without this, momentum scrolling (trackpads especially) can
+     overshoot past the last section and rubber-band back, reading as
+     a small extra "micro scroll" at the very bottom even though the
+     mandatory snap math itself is correct. This suppresses that
+     browser-level bounce entirely. */
+  overscroll-behavior-y: none;
 }
 
 /* "always" (not the default "normal") stops one section at a time —
@@ -345,28 +350,12 @@ ol { padding: 0; list-style: none; }
   flex-direction: column;
   justify-content: center;
   overflow: hidden;
-  /* space-7 * 5 (160px) is the grid line, then minus half of
-     .hero-eyebrow's own line-height (0.78rem, line-height: 1) — so
-     the grid line runs through the vertical center of that first
-     line of text, not its top edge. Left padding uses
+  /* Equal top/bottom padding so justify-content: center lands the
+     content on the true vertical center of the viewport at every
+     screen size — no fixed offset, no breakpoint. Left padding uses
      --content-left-gutter (see :root), shared by every section. */
-  padding: calc(var(--space-7) * 5 - 0.39rem) var(--gutter) var(--space-11) var(--content-left-gutter);
+  padding: var(--space-11) var(--gutter) var(--space-11) var(--content-left-gutter);
   scroll-snap-align: start;
-}
-
-/* At full-screen desktop widths the gutter already resolves to an
-   exact grid multiple (clamp() caps at 64px here), but true vertical
-   centering doesn't — a monitor's height isn't fixed the way "full
-   screen" fixes width, so the center point rarely lands on the grid.
-   Anchoring from a fixed, grid-exact top offset instead guarantees
-   alignment on any screen at this width, at the cost of no longer
-   perfectly re-centering on unusually short/tall monitors. Below this
-   width the original fluid centering is kept. */
-@media (min-width: 1280px) {
-  .hero {
-    justify-content: flex-start;
-    padding-top: calc(var(--space-7) * 5);
-  }
 }
 
 /* .hero-inner removed — the eyebrow/title/sub/meta are now four
@@ -478,13 +467,11 @@ ol { padding: 0; list-style: none; }
   text-transform: uppercase;
   writing-mode: vertical-rl;
 }
-/* equal distance from the section's top and bottom edge — now that
-   sections are sized to sit entirely below the fixed header (see
-   html's scroll-padding-top), a cue no longer needs extra offset to
-   clear it */
+/* matches .scroll-cue's distance from the Hero's bottom edge, so
+   every cue arrow site-wide sits the same distance in */
 .page-cue svg { writing-mode: horizontal-tb; }
-.page-cue--up { top: var(--space-11); }
-.page-cue--down { bottom: var(--space-11); }
+.page-cue--up { top: var(--space-7); }
+.page-cue--down { bottom: var(--space-7); }
 
 /* light-on-dark variant for cues placed inside dark sections (e.g. Contact) */
 .contact .page-cue { color: var(--blueprint-line); }
@@ -503,10 +490,12 @@ ol { padding: 0; list-style: none; }
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  /* space-7 * 3, matching .about's own top padding so the two
-     sections' headings sit at the same vertical position */
-  padding: calc(var(--space-7) * 3 - 0.36rem) 0 0;
+  justify-content: center;
+  /* Equal top/bottom padding so justify-content: center lands the
+     content on the true vertical center of the viewport at every
+     screen size, matching .hero's centering approach. No longer
+     aligned to .about's fixed top offset. */
+  padding: var(--space-11) 0;
   scroll-snap-align: start;
 }
 
@@ -519,160 +508,6 @@ ol { padding: 0; list-style: none; }
   grid-template-columns: 1fr;
   align-items: start;
 }
-
-/* work.html-only: a toggleable overlay showing exactly where
-   .work-layout's real grid column starts and ends — answers a
-   different question than the 32px spacing grid does (that one
-   shows spacing rhythm; this shows this one container's actual
-   column structure). Mirrors .work-layout's own grid template
-   exactly. Hidden by default; toggled by
-   setupWorkLayoutOverlayToggle() in main.js adding/removing
-   .is-visible via the "Show grid" button. */
-.work-layout-overlay {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  grid-template-columns: 1fr;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
-  z-index: 5;
-}
-
-.work-layout-overlay.is-visible { opacity: 1; }
-
-.work-layout-overlay-col {
-  position: relative;
-  height: 100%;
-  background: rgba(225, 29, 46, 0.12);
-  border: 1px dashed rgba(225, 29, 46, 0.6);
-}
-
-.work-layout-overlay-label {
-  position: sticky;
-  top: var(--space-3);
-  display: block;
-  margin: var(--space-3);
-  padding: var(--space-1) var(--space-2);
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  letter-spacing: 0.04em;
-  color: var(--white);
-  background: rgba(225, 29, 46, 0.85);
-  width: fit-content;
-}
-
-/* work.html-only: a labeled 32px alignment grid — same spacing rhythm
-   as the site-wide hidden grid (body::after), but with column
-   letters (A, B, C… like a spreadsheet) along the top and row
-   numbers down the left side, so a specific grid intersection can be
-   referenced by name (e.g. "column J, row 14") instead of guessing
-   pixel values. Covers the full rendered height of .work-page (not
-   just the viewport), since the label counts are computed from the
-   page's actual size — see setupAlignmentGridLabels() in main.js.
-   Toggled by the same "Show grid" button as .work-layout-overlay. */
-.alignment-grid-overlay {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
-  /* higher than .site-header's z-index (100) — the header has a
-     fully opaque background, so without this the top row of number
-     labels and every column letter (all near the very top of the
-     page, right where the fixed header sits) would be painted over
-     and invisible no matter how high .work-page's own stacking is */
-  z-index: 150;
-}
-
-.alignment-grid-overlay.is-visible { opacity: 1; }
-
-.alignment-grid-lines {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(225, 29, 46, 0.4) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(225, 29, 46, 0.4) 1px, transparent 1px);
-  /* --site-unit (fluid), not the fixed --space-7 — the grid itself
-     scales along with everything sized in units, so elements keep
-     landing on grid lines at any screen size */
-  background-size: var(--site-unit) var(--site-unit);
-}
-
-.alignment-grid-col-labels,
-.alignment-grid-row-labels {
-  position: absolute;
-  inset: 0;
-}
-
-/* Home page (index.html) equivalent of .alignment-grid-overlay —
-   deliberately lighter-weight (just the line pattern, no lettered
-   column/row labels like work.html's version) since it's repeated
-   across four sections here rather than one long scrolling page.
-   Added to Hero, Work, About, Contact only — never to
-   #intro-animation, so the falling-block sequence stays undisturbed.
-   Toggled by the single "Show grid" button (#home-grid-toggle) via
-   setupHomeGridToggle() in main.js. */
-.home-grid-overlay {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(225, 29, 46, 0.4) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(225, 29, 46, 0.4) 1px, transparent 1px);
-  background-size: var(--site-unit) var(--site-unit);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
-  z-index: 5;
-}
-
-.home-grid-overlay.is-visible { opacity: 1; }
-
-.home-grid-toggle {
-  position: fixed;
-  right: var(--space-7);
-  bottom: var(--space-7);
-  z-index: 200;
-  padding: var(--space-3) var(--space-5);
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--white);
-  background: var(--charcoal);
-  border: 1px solid var(--charcoal);
-  cursor: pointer;
-  transition: background var(--transition);
-}
-.home-grid-toggle:hover { background: var(--oxide); }
-
-.alignment-grid-label {
-  position: absolute;
-  font-family: var(--font-mono);
-  font-size: 0.55rem;
-  color: rgba(225, 29, 46, 0.9);
-  transform: translate(2px, 1px);
-}
-
-.work-layout-overlay-toggle {
-  position: fixed;
-  right: var(--space-7);
-  bottom: var(--space-7);
-  /* higher than .alignment-grid-overlay's z-index (150) so the
-     button stays clickable/visible even while the grid is showing */
-  z-index: 200;
-  padding: var(--space-3) var(--space-5);
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--white);
-  background: var(--charcoal);
-  border: 1px solid var(--charcoal);
-  cursor: pointer;
-  transition: background var(--transition);
-}
-.work-layout-overlay-toggle:hover { background: var(--oxide); }
 
 /* work.html's own standalone page (as opposed to .work, the home
    page's one-screen section) — normal document flow, no height cap,
@@ -936,15 +771,16 @@ ol { padding: 0; list-style: none; }
      second scroll stop */
   height: calc(100svh - var(--header-height));
   overflow: hidden;
-  /* extra bottom padding gives the "Contact" cue (absolutely
-     positioned inside this bottom padding) room to sit clear of
-     the dark Contact section that follows, instead of the dark
-     background crowding right up against About's own content */
-  /* space-11 (96px = space-7 * 3) is already a valid 32px-not-64px
-     line; minus half of .section-eyebrow's line-height (0.72rem,
-     line-height: 1) so the grid runs through the center of that
-     first line of text, not its top edge */
-  padding: calc(var(--space-11) - 0.36rem) 0 calc(var(--space-7) * 5);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  /* Equal top/bottom padding so justify-content: center lands the
+     content on the true vertical center of the viewport at every
+     screen size, matching .hero and .work. The "Contact" page-cue
+     is positioned absolutely relative to .about's own bottom edge
+     (see .page-cue--down), independent of this padding, so it stays
+     clear of the centered content either way. */
+  padding: var(--space-11) 0;
   background: var(--paper);
   scroll-snap-align: start;
 }
@@ -1025,11 +861,18 @@ ol { padding: 0; list-style: none; }
   height: calc(100svh - var(--header-height));
   background: var(--ink-navy-deep);
   color: var(--white);
-  /* space-7 * 5 (160px) is the grid line, then minus half of
-     .contact-eyebrow's own line-height (0.72rem, line-height: 1) —
-     same "grid runs through the text's center, not its top edge"
-     logic as .hero's padding above */
-  padding: calc(var(--space-7) * 5 - 0.36rem) var(--gutter) var(--space-11) var(--content-left-gutter);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  /* Top padding matches .hero/.work/.about's centering. Bottom
+     padding gets an extra --space-9 on top of that: .contact-footer-bar
+     (the copyright line) is absolutely positioned at this section's
+     true bottom edge, outside the flex layout, so centering alone
+     doesn't know it's there — on short viewports the centered
+     .contact-inner can grow tall enough to overflow evenly top and
+     bottom, bleeding into the footer strip's space. This reserves
+     clearance so that can't happen. */
+  padding: var(--space-11) var(--gutter) calc(var(--space-11) + var(--space-9)) var(--content-left-gutter);
   overflow: hidden;
   scroll-snap-align: start;
 }
@@ -1116,17 +959,6 @@ ol { padding: 0; list-style: none; }
   color: var(--blueprint-line);
 }
 .contact-footer-bar a:hover { color: var(--white); }
-
-/* pulled out of the footer bar's normal flex flow and pinned above
-   the "Show grid" toggle button (fixed bottom-right, --space-7 from
-   the edges) — space-7 * 4 clears the button's own height plus
-   breathing room, so they stack vertically instead of overlapping */
-.contact-back-to-top {
-  position: fixed;
-  right: var(--space-7);
-  bottom: calc(var(--space-7) * 4);
-  z-index: 200;
-}
 
 /* =========================================================
    PROJECT PAGE (project.html)

@@ -27,22 +27,9 @@ document.addEventListener("DOMContentLoaded", () => {
   renderProjectPage();
   setupMobileNav();
   alignWordmarkToGridColumn();
-  setupWorkLayoutOverlayToggle();
-  // These three run before the label builder — they reposition
-  // .work-preview and .work-photo-grid via margin (pulling the
-  // preview panel up to overlap the gallery instead of stacking
-  // below it). setupAlignmentGridLabels() measures .work-page's
-  // final rendered height to build its row labels; running it first
-  // measured the page while .work-preview still sat in its default
-  // stacked position — full extra height, not yet pulled up — which
-  // baked that inflated height into the (never-rebuilt) label
-  // positions and kept the document scrollable well past the real
-  // content and the footer.
   alignPreviewToGridColumn();
   alignGalleryToGridColumn();
   alignWorkPageElementsToGrid();
-  setupAlignmentGridLabels();
-  setupHomeGridToggle();
   alignHomeSectionsToGrid();
   document.getElementById("year").textContent = new Date().getFullYear();
 });
@@ -469,19 +456,6 @@ function alignWordmarkToGridColumn() {
 
 /* ---------- Work layout column + alignment grid overlay (work.html) ---------- */
 
-// Excel-style column naming: 0->A, 25->Z, 26->AA, 27->AB, etc. —
-// used for the alignment grid's column labels once there are more
-// than 26 of them (a wide, zoomed-out screen easily needs more).
-function numberToLetters(n) {
-  let label = "";
-  let num = n;
-  do {
-    label = String.fromCharCode(65 + (num % 26)) + label;
-    num = Math.floor(num / 26) - 1;
-  } while (num >= 0);
-  return label;
-}
-
 // Reads --site-unit's live computed pixel value off any element (it's
 // defined on :root, so it inherits everywhere) — the grid step is
 // fluid (a clamp(), see :root in styles.css), so this can't be a
@@ -489,47 +463,6 @@ function numberToLetters(n) {
 // each time, since it changes as the viewport resizes.
 function getSiteUnit(el) {
   return parseFloat(getComputedStyle(el).getPropertyValue("--site-unit")) || 32;
-}
-
-// Builds the labeled fluid grid's column-letter / row-number tags,
-// sized to the page's actual rendered dimensions (not just the
-// viewport) — the list can be any length, so the label count is
-// computed live rather than hardcoded. Safe to call again on resize.
-function setupAlignmentGridLabels() {
-  const workPage = document.querySelector(".work-page");
-  const colHost = document.getElementById("alignment-grid-col-labels");
-  const rowHost = document.getElementById("alignment-grid-row-labels");
-  if (!workPage || !colHost || !rowHost) return;
-
-  const buildLabels = () => {
-    const GRID_STEP = getSiteUnit(workPage);
-    colHost.innerHTML = "";
-    rowHost.innerHTML = "";
-
-    const cols = Math.ceil(workPage.scrollWidth / GRID_STEP);
-    const rows = Math.ceil(workPage.scrollHeight / GRID_STEP);
-
-    for (let i = 0; i < cols; i++) {
-      const label = document.createElement("span");
-      label.className = "alignment-grid-label";
-      label.style.left = `${i * GRID_STEP}px`;
-      label.style.top = "0px";
-      label.textContent = numberToLetters(i);
-      colHost.appendChild(label);
-    }
-
-    for (let i = 0; i < rows; i++) {
-      const label = document.createElement("span");
-      label.className = "alignment-grid-label";
-      label.style.left = "0px";
-      label.style.top = `${i * GRID_STEP}px`;
-      label.textContent = String(i + 1);
-      rowHost.appendChild(label);
-    }
-  };
-
-  buildLabels();
-  window.addEventListener("resize", buildLabels);
 }
 
 // Snaps .work-preview's right edge onto a specific lettered column
@@ -672,44 +605,6 @@ function alignWorkPageElementsToGrid() {
 
   align();
   window.addEventListener("resize", align);
-}
-
-// Lets the "Show grid" button flip both overlays on/off together —
-// .work-layout-overlay (where the two real grid columns start/end)
-// and the labeled 32px alignment grid — as one combined debugging
-// aid, without needing DevTools open.
-function setupWorkLayoutOverlayToggle() {
-  const button = document.getElementById("work-layout-overlay-toggle");
-  const columnOverlay = document.querySelector(".work-layout-overlay");
-  const gridOverlay = document.getElementById("alignment-grid-overlay");
-  if (!button || !columnOverlay || !gridOverlay) return;
-
-  button.addEventListener("click", () => {
-    const isVisible = columnOverlay.classList.toggle("is-visible");
-    gridOverlay.classList.toggle("is-visible", isVisible);
-    button.setAttribute("aria-pressed", String(isVisible));
-    button.textContent = isVisible ? "Hide grid" : "Show grid";
-  });
-}
-
-/* ---------- Home page (index.html) fluid grid ---------- */
-
-// Lets the "Show grid" button on the home page flip every
-// .home-grid-overlay on/off at once — one toggle for all four
-// sections (Hero, Work, About, Contact), rather than one per
-// section. #intro-animation never gets an overlay, so it's
-// unaffected either way.
-function setupHomeGridToggle() {
-  const button = document.getElementById("home-grid-toggle");
-  const overlays = document.querySelectorAll(".home-grid-overlay");
-  if (!button || overlays.length === 0) return;
-
-  button.addEventListener("click", () => {
-    const isVisible = !overlays[0].classList.contains("is-visible");
-    overlays.forEach((overlay) => overlay.classList.toggle("is-visible", isVisible));
-    button.setAttribute("aria-pressed", String(isVisible));
-    button.textContent = isVisible ? "Hide grid" : "Show grid";
-  });
 }
 
 // Snaps the Hero/Work/About/Contact sections' primary content blocks

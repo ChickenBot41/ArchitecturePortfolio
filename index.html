@@ -41,8 +41,6 @@
 
 <!-- ============ HERO ============ -->
 <section id="top" class="hero">
-  <div class="home-grid-overlay" aria-hidden="true"></div>
-
   <p class="hero-eyebrow">Architecture &amp; Spatial Design — Est. 2015</p>
   <h1 class="hero-title">Eric<br />Chen</h1>
   <p class="hero-sub">
@@ -63,7 +61,6 @@
 
 <!-- ============ WORK INDEX ============ -->
 <section id="work" class="work">
-  <div class="home-grid-overlay" aria-hidden="true"></div>
   <a class="page-cue page-cue--up" href="#top" aria-label="Back to home page">
     <svg width="12" height="20" viewBox="0 0 12 20"><path d="M6 20V2M1 7l5-5 5 5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
     <span>Home Page</span>
@@ -94,7 +91,6 @@
 
 <!-- ============ ABOUT ============ -->
 <section id="about" class="about">
-  <div class="home-grid-overlay" aria-hidden="true"></div>
   <a class="page-cue page-cue--up" href="#work" aria-label="Back to selected work">
     <svg width="12" height="20" viewBox="0 0 12 20"><path d="M6 20V2M1 7l5-5 5 5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
     <span>Selected Work</span>
@@ -151,7 +147,10 @@
     <svg width="12" height="20" viewBox="0 0 12 20"><path d="M6 20V2M1 7l5-5 5 5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
     <span>About</span>
   </a>
-  <div class="home-grid-overlay" aria-hidden="true"></div>
+  <a class="page-cue page-cue--down" href="#top" aria-label="Back to top">
+    <span>Back to top</span>
+    <svg width="12" height="20" viewBox="0 0 12 20"><path d="M6 20V2M1 7l5-5 5 5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
+  </a>
   <div class="contact-inner">
     <p class="section-eyebrow contact-eyebrow">Title Block</p>
     <h2 class="contact-title">Start a<br />conversation</h2>
@@ -180,18 +179,8 @@
 
   <div class="contact-footer-bar">
     <span class="contact-footer-copyright">© <span id="year"></span> Eric Chen Studio</span>
-    <a href="#top" class="contact-back-to-top">Back to top ↑</a>
   </div>
 </section>
-
-<button
-  type="button"
-  id="home-grid-toggle"
-  class="home-grid-toggle"
-  aria-pressed="false"
->
-  Show grid
-</button>
 
 <script src="projects-data.js?v=3"></script>
 <script src="main.js?v=56"></script>
