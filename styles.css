@@ -55,6 +55,10 @@
      all pages share the same left alignment */
   --content-left-gutter: calc(var(--gutter) + var(--space-7));
   --max-width: 1240px;
+  /* project.html's hero + gallery use this instead of --max-width so
+     that page's content spreads further across wide viewports —
+     kept separate so it doesn't affect the home page's layout. */
+  --project-max-width: 1680px;
   --transition: 0.5s cubic-bezier(0.65, 0, 0.35, 1);
   /* fixed nav bar's rendered height (space-5 padding top+bottom plus
      its content) — used to keep full-screen sections centered in the
@@ -745,19 +749,19 @@ ol { padding: 0; list-style: none; }
   top: 50%;
   transform: translateY(-50%);
   z-index: 10;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: 1px solid var(--charcoal);
-  background: var(--paper);
+  width: 64px;
+  height: 64px;
+  background: none;
+  border: none;
   color: var(--charcoal);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background var(--transition), color var(--transition);
+  transition: opacity var(--transition);
 }
-.gallery-arrow:hover { background: var(--charcoal); color: var(--white); }
+.gallery-arrow svg { width: 20px; height: 36px; }
+.gallery-arrow:hover { opacity: 0.55; }
 .gallery-arrow--prev { left: 0; }
 .gallery-arrow--next { right: 0; }
 
@@ -962,33 +966,65 @@ ol { padding: 0; list-style: none; }
 
 /* =========================================================
    PROJECT PAGE (project.html)
+   A long-form scroll: a full-viewport cover photo, then the story
+   below alternates full-bleed photos with short centered text
+   blocks (see .project-story / .story-media / .story-block) —
+   modeled on editorial architecture-firm project pages where you
+   scroll through the project rather than skim a static page.
    ========================================================= */
 .project-hero {
   position: relative;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--charcoal); /* shows briefly while the cover photo loads */
+}
+
+/* project.html falls back to this when ?id= doesn't match any
+   project — the hero has no photo to be full-bleed behind, so it
+   reverts to a normal padded block instead of a 100vh empty frame. */
+.project-hero--not-found {
+  height: auto;
   background: var(--paper);
-  /* space-7 * 2 (64px) is fine — "avoid 64px lines" only applies to
-     Hero/Contact. Then minus half of .project-eyebrow's line-height
-     (0.78rem, line-height: 1) so the grid runs through the center
-     of that first line of text, not its top edge. */
-  padding: calc(var(--header-height) + var(--space-7) * 2 - 0.39rem) 0 calc(var(--space-7) * 3);
+  padding: calc(var(--header-height) + var(--space-7) * 2) 0 calc(var(--space-7) * 3);
 }
 
-.project-hero-inner {
-  max-width: var(--max-width);
-  margin: 0 auto;
-  padding: 0 var(--gutter) 0 var(--content-left-gutter);
+.project-hero-media { position: absolute; inset: 0; }
+.project-hero-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* top, not centered — a tall cover (e.g. a magazine masthead) keeps
+     its top edge instead of being cropped around the vertical middle */
+  object-position: top;
+  display: block;
+}
+/* darkens the lower half of the cover photo so the white title text
+   overlaid on it stays legible regardless of the photo underneath */
+.project-hero-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0) 60%);
 }
 
+.project-hero-text {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  padding: var(--space-9) var(--gutter) var(--space-9) var(--content-left-gutter);
+  color: var(--white);
+}
 .project-eyebrow {
   font-family: var(--font-mono);
   font-size: 0.78rem;
-  /* explicit, not inherited — .project-hero's top padding math below
-     needs to know this text's exact rendered height */
   line-height: 1;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--charcoal-soft);
 }
+.project-hero-text .project-eyebrow { color: var(--paper); opacity: 0.85; }
 
 .project-title {
   font-family: var(--font-display);
@@ -1001,11 +1037,23 @@ ol { padding: 0; list-style: none; }
 }
 
 .project-lede {
-  max-width: 720px;
+  max-width: 820px;
   margin-top: calc(var(--space-7) * 2);
   font-size: 1.15rem;
   line-height: 1.5;
   color: var(--charcoal);
+}
+/* the text section is the project's one dedicated "explain it" block
+   now, so its lede reads bolder/bigger than a normal paragraph would —
+   .project-not-found also uses .project-lede, but only for one link,
+   so this doesn't hurt that case */
+.project-text .project-lede {
+  max-width: none; /* match the fact row's full width instead of a narrow reading column */
+  margin-top: 0;
+  font-size: clamp(1.3rem, 1.7vw, 1.7rem);
+  font-weight: 600;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
 }
 
 .project-quote {
@@ -1015,7 +1063,7 @@ ol { padding: 0; list-style: none; }
   line-height: 1.5;
   color: var(--oxide);
   max-width: 720px;
-  margin: var(--space-7) 0 0;
+  margin: calc(var(--space-7) * 2) auto 0;
   padding-left: var(--space-7);
   border-left: 2px solid var(--oxide);
 }
@@ -1038,57 +1086,113 @@ ol { padding: 0; list-style: none; }
 }
 .project-meta dd { margin: 0; font-size: 0.92rem; }
 
+/* ---- section 2: the text block that explains the project ----
+   A fact row up top (status/program/site area/location, styled after
+   the label-over-value stat row on the Studios Architecture project
+   page this was modeled on) with the descriptive paragraph below it. */
+.project-text {
+  max-width: var(--project-max-width);
+  margin: 0 auto;
+  padding: calc(var(--space-7) * 5) var(--gutter) calc(var(--space-7) * 4) var(--content-left-gutter);
+}
+
+.project-text .project-meta {
+  margin-top: 0;
+  padding-top: 0;
+  padding-bottom: calc(var(--space-7) * 2);
+  margin-bottom: calc(var(--space-7) * 3);
+  border-top: none;
+  border-bottom: 1px solid var(--paper-line);
+  gap: calc(var(--space-7) * 3);
+}
+.project-text .project-meta dd { font-size: 1.1rem; font-weight: 600; }
+
+/* ---- section 3: one-image-at-a-time gallery with arrow nav ----
+   Framed with the shared --gutter on either side (not edge-to-edge)
+   so there's always a margin of page visible around the photo,
+   matching the cover photo's size but not its full-bleed treatment. */
+.project-carousel { padding-bottom: calc(var(--space-7) * 4); }
+
+.project-carousel-frame {
+  position: relative;
+  max-width: var(--project-max-width);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+.project-carousel-media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+.project-carousel-media img { max-width: 100%; max-height: 85vh; width: auto; height: auto; display: block; }
+.project-carousel-media button { all: unset; display: block; cursor: zoom-in; }
+
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 64px;
+  height: 64px;
+  background: none;
+  border: none;
+  color: var(--charcoal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity var(--transition);
+}
+.carousel-arrow svg { width: 20px; height: 36px; }
+.carousel-arrow:hover { opacity: 0.55; }
+.carousel-arrow--prev { left: 0; }
+.carousel-arrow--next { right: 0; }
+
+@media (max-width: 640px) {
+  .project-hero { height: 70vh; }
+  .project-carousel-media img { max-height: 60vh; }
+}
+
 .project-not-found {
-  max-width: var(--max-width);
+  max-width: var(--project-max-width);
   margin: 0 auto;
   padding: calc(var(--header-height) + var(--space-7) * 4) var(--gutter) calc(var(--header-height) + var(--space-7) * 4) var(--content-left-gutter);
 }
 
-/* Gallery grid: a fixed 256px (8 * space-7) row unit means every
-   size variant below — however many columns/rows it spans — lands
-   exactly on the 32px baseline grid. */
-.project-gallery-section {
-  max-width: var(--max-width);
-  margin: 0 auto;
-  padding: 0 var(--gutter) calc(var(--space-7) * 4) var(--content-left-gutter);
+/* Full-image preview, opened by clicking any story photo. */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-9);
+  background: rgba(0, 0, 0, 0.92);
 }
-
-.project-gallery {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: calc(var(--space-7) * 8);
-  gap: var(--space-7);
+.lightbox[hidden] { display: none; }
+.lightbox img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  cursor: zoom-out;
 }
-
-.project-gallery-item { overflow: hidden; background: var(--paper-raised); }
-.project-gallery-item img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  /* full color on the project page itself — the grayscale treatment
-     is specific to the home page's gallery cards (see
-     .gallery-card-photo img), not this detail-view gallery */
-  display: block;
+.lightbox-close {
+  all: unset;
+  position: absolute;
+  top: var(--space-7);
+  right: var(--gutter);
+  color: var(--white);
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: var(--space-3);
 }
-
-.project-gallery-item.size-square { grid-column: span 1; grid-row: span 1; }
-.project-gallery-item.size-wide { grid-column: span 2; grid-row: span 1; }
-.project-gallery-item.size-tall { grid-column: span 1; grid-row: span 2; }
-.project-gallery-item.size-large { grid-column: span 2; grid-row: span 2; }
-
-@media (max-width: 900px) {
-  .project-gallery { grid-template-columns: repeat(2, 1fr); }
-  .project-gallery-item.size-wide,
-  .project-gallery-item.size-large { grid-column: span 2; }
-}
-
-@media (max-width: 640px) {
-  .project-gallery { grid-template-columns: 1fr; }
-  .project-gallery-item.size-wide,
-  .project-gallery-item.size-tall,
-  .project-gallery-item.size-large,
-  .project-gallery-item.size-square { grid-column: span 1; grid-row: span 1; }
-}
+.lightbox-close:hover, .lightbox-close:focus-visible { opacity: 0.7; }
 
 /* =========================================================
    FOOTER

@@ -82,14 +82,6 @@ const TOTAL_ANIMATION_MS = 7000;
 // speeds up toward landing (see the ease-in curve on .letter-block).
 const BLOCK_FALL_DURATION_MS = 900;
 
-// Replays (scrolling back up to the top) play the exact same
-// choreography, just compressed into ~1.5s instead of ~7.5s — same
-// ratio of fall-duration to total time, so nothing about the motion
-// itself changes, only its speed.
-const REPLAY_SPEED_FACTOR = 1500 / TOTAL_ANIMATION_MS;
-const REPLAY_TOTAL_ANIMATION_MS = Math.round(TOTAL_ANIMATION_MS * REPLAY_SPEED_FACTOR);
-const REPLAY_BLOCK_FALL_DURATION_MS = Math.round(BLOCK_FALL_DURATION_MS * REPLAY_SPEED_FACTOR);
-
 // Row fall order (used within each column): "A" is the bottom row of
 // each letter, "E" is the top row — each column fills from the
 // ground up as it falls.
@@ -119,7 +111,7 @@ function setupIntroAnimation() {
   // Visitors are never trapped on the animation — they can scroll
   // away immediately, even mid-fall, instead of being forced to
   // watch it finish.
-  runIntroSequence({ isReplay: false });
+  runIntroSequence();
 
   // Replay the whole sequence once the user scrolls all the way back
   // to the top of the page, so revisiting it re-triggers the fall
@@ -135,18 +127,18 @@ function setupIntroAnimation() {
     if (hasScrolledAwayFromTop && document.body.classList.contains("intro-done")) {
       hasScrolledAwayFromTop = false;
       document.body.classList.remove("intro-done");
-      runIntroSequence({ isReplay: true });
+      runIntroSequence();
     }
   });
 }
 
 // Builds (or rebuilds) the falling blocks and schedules the
-// "intro-done" flag once the whole sequence has landed. Replays use
-// the same cell order and easing as the first run, just compressed
-// in time (see REPLAY_SPEED_FACTOR).
-function runIntroSequence({ isReplay }) {
-  const totalMs = isReplay ? REPLAY_TOTAL_ANIMATION_MS : TOTAL_ANIMATION_MS;
-  const fallMs = isReplay ? REPLAY_BLOCK_FALL_DURATION_MS : BLOCK_FALL_DURATION_MS;
+// "intro-done" flag once the whole sequence has landed. Every run —
+// first load or replay — uses the same timing, so the choreography
+// never feels rushed on a replay.
+function runIntroSequence() {
+  const totalMs = TOTAL_ANIMATION_MS;
+  const fallMs = BLOCK_FALL_DURATION_MS;
 
   const hosts = { E: document.getElementById("letter-E"), C: document.getElementById("letter-C") };
   Object.values(hosts).forEach((host) => host && (host.innerHTML = ""));
@@ -356,14 +348,16 @@ function setupGalleryArrows() {
 // This keeps projects-data.js the single source of truth instead of
 // hand-writing six near-identical HTML files.
 function renderProjectPage() {
-  const heroInner = document.getElementById("project-hero-inner");
-  const galleryList = document.getElementById("project-gallery");
-  if (!heroInner || typeof PROJECTS === "undefined") return;
+  const heroMedia = document.getElementById("project-hero-media");
+  const textSection = document.getElementById("project-text");
+  const carousel = document.getElementById("project-carousel");
+  if (!heroMedia || typeof PROJECTS === "undefined") return;
 
   const slug = new URLSearchParams(location.search).get("id");
   const project = PROJECTS.find((p) => p.slug === slug);
 
   if (!project) {
+    document.getElementById("project-hero").classList.add("project-hero--not-found");
     document.querySelector(".project-hero").innerHTML = `
       <div class="project-not-found">
         <p class="project-eyebrow">Not found</p>
@@ -373,33 +367,125 @@ function renderProjectPage() {
         </p>
       </div>
     `;
-    if (galleryList) galleryList.remove();
+    if (textSection) textSection.remove();
+    if (carousel) carousel.remove();
     return;
   }
 
   document.title = `${project.title} — Eric Chen`;
 
-  heroInner.innerHTML = `
+  const photos = Array.isArray(project.gallery) ? project.gallery : [];
+
+  heroMedia.innerHTML = photos[0] ? `<img src="${photos[0].src}" alt="${project.title}" />` : "";
+
+  const heroText = document.createElement("div");
+  heroText.className = "project-hero-text";
+  heroText.innerHTML = `
     <p class="project-eyebrow">${project.num} — ${project.typology} — ${project.year}</p>
     <h1 class="project-title">${project.title}</h1>
-    <p class="project-lede">${project.description}</p>
-    ${project.quote ? `<blockquote class="project-quote">${project.quote}</blockquote>` : ""}
-    <dl class="project-meta">
-      <div><dt>Status</dt><dd>${project.status}</dd></div>
-      <div><dt>Program</dt><dd>${project.program}</dd></div>
-      <div><dt>Site area</dt><dd>${project.siteArea}</dd></div>
-      <div><dt>Location</dt><dd>${project.location}</dd></div>
-    </dl>
   `;
+  heroMedia.after(heroText);
 
-  if (galleryList && Array.isArray(project.gallery)) {
-    project.gallery.forEach((photo) => {
-      const item = document.createElement("li");
-      item.className = `project-gallery-item size-${photo.size}`;
-      item.innerHTML = `<img src="${photo.src}" alt="${project.title}" loading="lazy" />`;
-      galleryList.appendChild(item);
-    });
+  if (textSection) {
+    // Not every project has a program/site area worth showing (e.g. a
+    // print piece has no "site area") — only render the facts that
+    // actually exist on this project instead of a blank value.
+    const facts = [
+      ["Status", project.status],
+      ["Program", project.program],
+      ["Site area", project.siteArea],
+      ["Location", project.location],
+    ].filter(([, value]) => value);
+
+    textSection.innerHTML = `
+      <dl class="project-meta">
+        ${facts.map(([label, value]) => `<div><dt>${label}</dt><dd>${value}</dd></div>`).join("")}
+      </dl>
+      <p class="project-lede">${project.description}</p>
+    `;
   }
+
+  setupCarousel(photos, project.title);
+  setupLightbox();
+}
+
+/* ---------- Project gallery carousel (one image, prev/next arrows) ---------- */
+
+function setupCarousel(photos, altText) {
+  const media = document.getElementById("project-carousel-media");
+  const prevBtn = document.getElementById("carousel-prev");
+  const nextBtn = document.getElementById("carousel-next");
+  if (!media || !prevBtn || !nextBtn) return;
+
+  if (photos.length === 0) {
+    document.getElementById("project-carousel").remove();
+    return;
+  }
+
+  let index = 0;
+  const render = () => {
+    media.innerHTML = `
+      <button type="button">
+        <img src="${photos[index].src}" alt="${altText}" loading="lazy" />
+      </button>
+    `;
+  };
+
+  prevBtn.addEventListener("click", () => {
+    index = (index - 1 + photos.length) % photos.length;
+    render();
+  });
+  nextBtn.addEventListener("click", () => {
+    index = (index + 1) % photos.length;
+    render();
+  });
+
+  // A single photo can't cycle anywhere, so the arrows would just be
+  // decorative — hide them rather than show controls that do nothing.
+  if (photos.length < 2) {
+    prevBtn.hidden = true;
+    nextBtn.hidden = true;
+  }
+
+  render();
+}
+
+/* ---------- Lightbox (full-image preview on click) ---------- */
+
+function setupLightbox() {
+  const lightbox = document.getElementById("lightbox");
+  const lightboxImg = document.getElementById("lightbox-img");
+  const closeBtn = document.getElementById("lightbox-close");
+  const media = document.getElementById("project-carousel-media");
+  if (!lightbox || !lightboxImg || !closeBtn || !media) return;
+
+  const open = (src, alt) => {
+    lightboxImg.src = src;
+    lightboxImg.alt = alt;
+    lightbox.hidden = false;
+  };
+  const close = () => {
+    lightbox.hidden = true;
+    lightboxImg.src = "";
+  };
+
+  // Delegate from the media container rather than binding a listener
+  // to each rendered photo — the carousel replaces that photo on every
+  // prev/next click, so a direct listener would need re-attaching too.
+  media.addEventListener("click", (event) => {
+    const button = event.target.closest("button");
+    if (!button) return;
+    const img = button.querySelector("img");
+    if (img) open(img.src, img.alt);
+  });
+
+  closeBtn.addEventListener("click", close);
+  lightbox.addEventListener("click", (event) => {
+    if (event.target === lightbox || event.target === lightboxImg) close();
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !lightbox.hidden) close();
+  });
 }
 
 /* ---------- Mobile nav ---------- */
@@ -641,14 +727,18 @@ function alignHomeSectionsToGrid() {
     { section: document.querySelector(".hero"), el: document.querySelector(".hero-title"), opticalAdjust: -3 },
     { section: document.querySelector(".hero"), el: document.querySelector(".hero-sub") },
     { section: document.querySelector(".hero"), el: document.querySelector(".hero-meta") },
-    // index.html's Work section only — left snapped to column H
-    // instead of the shared column E the other home-page sections use.
-    // Targets .gallery-track (the actual card-holding element)
-    // specifically, not the outer .gallery wrapper — the prev/next
-    // .gallery-arrow buttons are separate, absolutely-positioned
-    // siblings inside that wrapper and are deliberately left alone.
+    // index.html's Work section heading only — left snapped to column
+    // H instead of the shared column E the other home-page sections
+    // use. .gallery-track itself is deliberately NOT snapped here
+    // (it used to be): pulling the track's left edge onto column H
+    // shrinks the gap .gallery-arrow--prev sits in (that arrow is a
+    // separate, absolutely-positioned sibling at the wrapper's own
+    // edge, not aware of this nudge), and at wider viewports that gap
+    // shrinks enough for the arrow to overlap the first photo. The
+    // track now keeps its ordinary padding-defined position instead,
+    // which already lines up close enough to column H and leaves the
+    // arrow its full clearance.
     { section: document.querySelector(".work"), el: document.querySelector(".work .section-head"), columnIndex: H_COLUMN_INDEX },
-    { section: document.querySelector(".work"), el: document.querySelector(".work .gallery-track"), columnIndex: H_COLUMN_INDEX },
     // About's section head and portrait — both snapped to column H
     // (the portrait's visible left edge, not just .about-layout's box
     // edge, since the padding-left-aware math below already accounts

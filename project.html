@@ -14,7 +14,7 @@
 <!-- ?v= is a manual cache-buster: bump it whenever styles.css, main.js, or projects-data.js
      change, since the local dev server doesn't send cache headers and
      browsers will otherwise keep serving a stale copy. -->
-<link rel="stylesheet" href="styles.css?v=110" />
+<link rel="stylesheet" href="styles.css?v=120" />
 </head>
 <body class="intro-done">
 
@@ -31,31 +31,45 @@
   </button>
 </header>
 
-<!-- ============ PROJECT DESCRIPTION ============ -->
-<section class="project-hero">
-  <a class="page-cue page-cue--up" href="work.html" aria-label="Back to selected work">
-    <svg width="12" height="20" viewBox="0 0 12 20"><path d="M6 20V2M1 7l5-5 5 5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
-    <span>Selected Work</span>
-  </a>
-
-  <div class="project-hero-inner" id="project-hero-inner">
+<!-- ============ PROJECT HERO (full-bleed cover photo) ============ -->
+<section class="project-hero" id="project-hero">
+  <div class="project-hero-media" id="project-hero-media">
     <!-- filled by main.js from PROJECTS, matched via ?id= in the URL -->
   </div>
 </section>
 
-<!-- ============ PROJECT GALLERY ============ -->
-<section class="project-gallery-section">
-  <ul class="project-gallery" id="project-gallery" aria-label="Project photographs">
-    <!-- filled by main.js -->
-  </ul>
+<!-- ============ PROJECT TEXT (description, quote, meta) ============ -->
+<section class="project-text" id="project-text">
+  <!-- filled by main.js -->
 </section>
+
+<!-- ============ PROJECT GALLERY (one image at a time, arrow navigation) ============ -->
+<section class="project-carousel" id="project-carousel">
+  <div class="project-carousel-frame">
+    <button type="button" class="carousel-arrow carousel-arrow--prev" id="carousel-prev" aria-label="Previous image">
+      <svg width="9" height="16" viewBox="0 0 9 16"><polygon points="8,1 1,8 8,15" fill="currentColor"/></svg>
+    </button>
+    <div class="project-carousel-media" id="project-carousel-media">
+      <!-- filled by main.js -->
+    </div>
+    <button type="button" class="carousel-arrow carousel-arrow--next" id="carousel-next" aria-label="Next image">
+      <svg width="9" height="16" viewBox="0 0 9 16"><polygon points="1,1 8,8 1,15" fill="currentColor"/></svg>
+    </button>
+  </div>
+</section>
+
+<!-- ============ IMAGE LIGHTBOX ============ -->
+<div class="lightbox" id="lightbox" hidden>
+  <button class="lightbox-close" id="lightbox-close" aria-label="Close preview">&times;</button>
+  <img id="lightbox-img" src="" alt="" />
+</div>
 
 <footer class="site-footer">
   <span>© <span id="year"></span> Eric Chen Studio</span>
   <a href="work.html">Back to Selected Work ↑</a>
 </footer>
 
-<script src="projects-data.js?v=3"></script>
-<script src="main.js?v=56"></script>
+<script src="projects-data.js?v=17"></script>
+<script src="main.js?v=65"></script>
 </body>
 </html>
