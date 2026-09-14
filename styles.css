@@ -694,8 +694,6 @@ ol { padding: 0; list-style: none; }
 
 .gallery-card-frame {
   display: block; /* it's an <a>, needs block sizing to fill the card */
-  position: relative;
-  aspect-ratio: 1 / 1;
   /* no border, no padding — the photo bleeds edge-to-edge */
   background: var(--paper);
 }
@@ -703,7 +701,7 @@ ol { padding: 0; list-style: none; }
 .gallery-card-photo {
   position: relative;
   width: 100%;
-  height: 100%;
+  aspect-ratio: 1 / 1;
   overflow: hidden;
 }
 
@@ -719,15 +717,12 @@ ol { padding: 0; list-style: none; }
 .gallery-card-frame:hover .gallery-card-photo img { filter: grayscale(0) contrast(1.05); }
 
 .gallery-card-caption {
-  position: absolute;
-  inset: auto 0 0 0;
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: baseline;
   gap: var(--space-3);
-  padding: var(--space-7) var(--space-7) var(--space-3);
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.75), transparent);
-  color: var(--white);
+  padding-top: var(--space-3);
+  color: var(--charcoal);
 }
 
 .gallery-card-name {
@@ -740,7 +735,7 @@ ol { padding: 0; list-style: none; }
 .gallery-card-date {
   font-family: var(--font-mono);
   font-size: 0.78rem;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--blueprint-line);
   white-space: nowrap;
 }
 

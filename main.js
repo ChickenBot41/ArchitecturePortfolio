@@ -244,10 +244,10 @@ function buildGalleryCard(project, isClone) {
     <a class="gallery-card-frame" href="project.html?id=${project.slug}"${tabindex}>
       <div class="gallery-card-photo">
         <img src="${project.image}" alt="${project.title}" loading="lazy" />
-        <div class="gallery-card-caption">
-          <span class="gallery-card-name">${project.title}</span>
-          <span class="gallery-card-date">${project.year}</span>
-        </div>
+      </div>
+      <div class="gallery-card-caption">
+        <span class="gallery-card-name">${project.title}</span>
+        <span class="gallery-card-date">${project.year}</span>
       </div>
     </a>
   `;
