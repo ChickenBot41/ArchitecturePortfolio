@@ -12,7 +12,7 @@
    Originally scoped to work.html only (as --work-unit); now defined
    on :root so the same fluid module scale can be shared site-wide —
    currently used by work.html and the home page's non-intro
-   sections (Hero, Work, About, Contact). */
+   sections (Hero, Work, Contact). */
 @property --site-unit {
   syntax: "<length>";
   inherits: true;
@@ -112,7 +112,6 @@ html {
 #intro-animation,
 #top,
 #work,
-#about,
 #contact {
   scroll-snap-stop: always;
 }
@@ -765,95 +764,6 @@ ol { padding: 0; list-style: none; }
 .gallery-arrow--next { right: 0; }
 
 /* =========================================================
-   ABOUT
-   ========================================================= */
-.about {
-  position: relative;
-  /* capped at exactly the space below the fixed header, like every
-     other section — see .work's comment for why min-height risks a
-     second scroll stop */
-  height: calc(100svh - var(--header-height));
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  /* Equal top/bottom padding so justify-content: center lands the
-     content on the true vertical center of the viewport at every
-     screen size, matching .hero and .work. The "Contact" page-cue
-     is positioned absolutely relative to .about's own bottom edge
-     (see .page-cue--down), independent of this padding, so it stays
-     clear of the centered content either way. */
-  padding: var(--space-11) 0;
-  background: var(--paper);
-  scroll-snap-align: start;
-}
-
-.about-layout {
-  max-width: var(--max-width);
-  /* space-7 * 2 (64px) — fine here; "avoid 64px lines" only applies
-     to Hero/Contact */
-  margin: calc(var(--space-7) * 2) auto 0;
-  padding: 0 var(--gutter) 0 var(--content-left-gutter);
-  display: grid;
-  grid-template-columns: 300px 1fr;
-  gap: var(--space-10);
-}
-
-.about-portrait {
-  align-self: start;
-  /* matches the old SVG line-drawing's 300x360 (5:6) proportions, so
-     the grid layout/sizing around it doesn't need to change */
-  aspect-ratio: 300 / 360;
-  overflow: hidden;
-  border: 1px solid var(--charcoal);
-}
-
-.about-portrait img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  /* grayscale to match the site's black-and-white palette — same
-     treatment as the gallery card photos elsewhere */
-  filter: grayscale(1) contrast(1.05);
-}
-
-.about-lede {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 1.4rem;
-  line-height: 1.35;
-  letter-spacing: -0.005em;
-}
-
-.about-copy p + p { margin-top: var(--space-7); font-size: 1rem; color: var(--charcoal); }
-
-.about-copy blockquote {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 1.2rem;
-  line-height: 1.5;
-  color: var(--oxide);
-  margin: var(--space-7) 0;
-  padding-left: var(--space-7);
-  border-left: 2px solid var(--oxide);
-}
-
-.about-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-  margin-top: var(--space-7);
-}
-.about-tags span {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--charcoal);
-}
-
-/* =========================================================
    CONTACT
    ========================================================= */
 .contact {
@@ -1216,8 +1126,6 @@ ol { padding: 0; list-style: none; }
   .work-layout { grid-template-columns: 1fr; }
   .work-preview { display: none; }
   .work-photo-grid { grid-template-columns: repeat(2, 1fr); }
-  .about-layout { grid-template-columns: 1fr; }
-  .about-portrait { display: none; }
 }
 
 @media (max-width: 640px) {

@@ -14,7 +14,7 @@
 <!-- ?v= is a manual cache-buster: bump it whenever styles.css, main.js, or projects-data.js
      change, since the local dev server doesn't send cache headers and
      browsers will otherwise keep serving a stale copy. -->
-<link rel="stylesheet" href="styles.css?v=122" />
+<link rel="stylesheet" href="styles.css?v=123" />
 </head>
 <body>
 
@@ -31,7 +31,6 @@
   <a href="#top" class="wordmark">Eric Chen</a>
   <nav class="site-nav">
     <a href="work.html">Work</a>
-    <a href="#about">About</a>
     <a href="#contact">Contact</a>
   </nav>
   <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
@@ -79,58 +78,6 @@
     </button>
   </div>
 
-  <a class="page-cue page-cue--down" href="#about" aria-label="Scroll to about">
-    <span>About</span>
-    <svg width="12" height="20" viewBox="0 0 12 20"><path d="M6 0v18M1 13l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
-  </a>
-</section>
-
-<!-- ============ ABOUT ============ -->
-<section id="about" class="about">
-  <a class="page-cue page-cue--up" href="#work" aria-label="Back to selected work">
-    <svg width="12" height="20" viewBox="0 0 12 20"><path d="M6 20V2M1 7l5-5 5 5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
-    <span>Selected Work</span>
-  </a>
-
-  <div class="section-head">
-    <p class="section-eyebrow">Profile</p>
-    <h2 class="section-title">About</h2>
-  </div>
-
-  <div class="about-layout">
-    <div class="about-portrait">
-      <img src="eric-chen-portrait.jpeg" alt="Portrait of Eric Chen" />
-    </div>
-
-    <div class="about-copy">
-      <p class="about-lede">
-        I run a small studio that takes on a small number of projects —
-        usually no more than three at once — so that every drawing gets
-        looked at twice before it's built.
-      </p>
-      <p>
-        Trained in Porto and Rotterdam, I spent four years working on
-        institutional housing before starting an independent practice in
-        2015. The work since has ranged in scale from a tea pavilion to a
-        maternal health clinic, but the method stays the same: understand
-        the site's own logic — its slope, its wind, its material at
-        hand — and let the building be the smallest possible answer to it.
-      </p>
-      <blockquote>
-        "A good plan should be legible from the roof of the building next
-        door — you shouldn't need the section to understand it."
-      </blockquote>
-      <div class="about-tags">
-        <span>Site Analysis</span>
-        <span>Passive Cooling</span>
-        <span>Adaptive Reuse</span>
-        <span>Rammed Earth</span>
-        <span>Rhino / Grasshopper</span>
-        <span>Construction Admin</span>
-      </div>
-    </div>
-  </div>
-
   <a class="page-cue page-cue--down" href="#contact" aria-label="Scroll to contact">
     <span>Contact</span>
     <svg width="12" height="20" viewBox="0 0 12 20"><path d="M6 0v18M1 13l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
@@ -139,9 +86,9 @@
 
 <!-- ============ CONTACT ============ -->
 <section id="contact" class="contact">
-  <a class="page-cue page-cue--up" href="#about" aria-label="Back to about">
+  <a class="page-cue page-cue--up" href="#work" aria-label="Back to selected work">
     <svg width="12" height="20" viewBox="0 0 12 20"><path d="M6 20V2M1 7l5-5 5 5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
-    <span>About</span>
+    <span>Selected Work</span>
   </a>
   <a class="page-cue page-cue--down" href="#top" aria-label="Back to top">
     <span>Back to top</span>
@@ -179,6 +126,6 @@
 </section>
 
 <script src="projects-data.js?v=17"></script>
-<script src="main.js?v=66"></script>
+<script src="main.js?v=67"></script>
 </body>
 </html>

@@ -693,7 +693,7 @@ function alignWorkPageElementsToGrid() {
   window.addEventListener("resize", align);
 }
 
-// Snaps the Hero/Work/About/Contact sections' primary content blocks
+// Snaps the Hero/Work/Contact sections' primary content blocks
 // onto grid column E (index 4 — same convention as work.html), the
 // same live-measured margin-left technique used throughout this
 // file. Hero's four elements (eyebrow, title, sub, meta) are included
@@ -706,8 +706,8 @@ function alignHomeSectionsToGrid() {
   const E_COLUMN_INDEX = 4; // A=0, B=1, C=2, D=3, E=4
   const H_COLUMN_INDEX = 7; // A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7
 
-  // Class selectors (.work, .about, .contact), not #work/#about/
-  // #contact — work.html's own section also happens to use id="work",
+  // Class selectors (.work, .contact), not #work/#contact —
+  // work.html's own section also happens to use id="work",
   // so an ID-based query here was unintentionally also matching (and
   // re-snapping) work.html's .section-head after its own H-column
   // snap had already run, since main.js is shared across pages and
@@ -739,13 +739,6 @@ function alignHomeSectionsToGrid() {
     // which already lines up close enough to column H and leaves the
     // arrow its full clearance.
     { section: document.querySelector(".work"), el: document.querySelector(".work .section-head"), columnIndex: H_COLUMN_INDEX },
-    // About's section head and portrait — both snapped to column H
-    // (the portrait's visible left edge, not just .about-layout's box
-    // edge, since the padding-left-aware math below already accounts
-    // for .about-layout's own padding-left, which is exactly where
-    // the portrait starts)
-    { section: document.querySelector(".about"), el: document.querySelector(".about .section-head"), columnIndex: H_COLUMN_INDEX },
-    { section: document.querySelector(".about"), el: document.querySelector(".about .about-layout"), columnIndex: H_COLUMN_INDEX },
     { section: document.querySelector(".contact"), el: document.querySelector(".contact .contact-inner") },
     { section: document.querySelector(".contact"), el: document.querySelector(".contact-footer-copyright") },
   ].filter((t) => t.section && t.el);
