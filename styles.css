@@ -777,15 +777,13 @@ ol { padding: 0; list-style: none; }
   display: flex;
   flex-direction: column;
   justify-content: center;
-  /* Top padding matches .hero/.work/.about's centering. Bottom
-     padding gets an extra --space-9 on top of that: .contact-footer-bar
-     (the copyright line) is absolutely positioned at this section's
-     true bottom edge, outside the flex layout, so centering alone
-     doesn't know it's there — on short viewports the centered
-     .contact-inner can grow tall enough to overflow evenly top and
-     bottom, bleeding into the footer strip's space. This reserves
-     clearance so that can't happen. */
-  padding: var(--space-11) var(--gutter) calc(var(--space-11) + var(--space-9)) var(--content-left-gutter);
+  /* Symmetric top/bottom padding, matching .hero/.work's centering —
+     asymmetric padding here (extra weight on the bottom, to clear
+     .contact-footer-bar) used to pull the centered content upward
+     relative to those sections. Now that .contact-inner is shorter
+     (no CTA button, no Elsewhere row), it comfortably clears the
+     footer strip without that extra reserve. */
+  padding: var(--space-11) var(--gutter) var(--space-11) var(--content-left-gutter);
   overflow: hidden;
   scroll-snap-align: start;
 }
@@ -840,18 +838,6 @@ ol { padding: 0; list-style: none; }
 .contact-row dd { margin: 0; }
 .contact-row a { border-bottom: 1px solid transparent; transition: border-color 0.3s ease; }
 .contact-row a:hover { border-color: currentColor; }
-
-.contact-cta {
-  display: inline-block;
-  margin-top: var(--space-7);
-  font-family: var(--font-mono);
-  font-size: 0.92rem;
-  letter-spacing: 0.04em;
-  padding: var(--space-7) var(--space-7);
-  border: 1px solid var(--white);
-  transition: background var(--transition), color var(--transition);
-}
-.contact-cta:hover { background: var(--white); color: var(--ink-navy-deep); }
 
 /* folded in from what used to be a trailing <footer> after Contact —
    living inside the section instead means Contact is genuinely the
