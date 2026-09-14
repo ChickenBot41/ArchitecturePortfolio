@@ -658,9 +658,13 @@ ol { padding: 0; list-style: none; }
      precisely three projects, never a peek of a fourth. Card width
      is now fluid (--site-unit * 14), so this formula must match it. */
   max-width: calc((var(--site-unit) * 14 * 3) + (var(--space-7) * 2) + var(--gutter) + var(--content-left-gutter));
-  /* space-7 * 2 (64px) — fine here; "avoid 64px lines" only applies
-     to Hero/Contact */
-  margin: calc(var(--space-7) * 2) auto 0;
+  /* Was space-7 * 2 (64px) until the card caption moved below the
+     photo (see .gallery-card-caption) and added real height to each
+     card — .work is a fixed-height, overflow:hidden section (see
+     .work), so that extra height was pushing the caption past the
+     bottom edge and clipping it off. Trimmed by one step to make
+     room instead of growing the section. */
+  margin: var(--space-7) auto 0;
   padding: 0 var(--gutter) 0 var(--content-left-gutter);
   overflow: hidden;
 }
