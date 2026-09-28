@@ -21,13 +21,11 @@ document.addEventListener("DOMContentLoaded", () => {
   syncHeaderHeight();
   setupIntroAnimation();
   renderWorkPhotoGrid();
-  setupPreviewPanel();
   renderWorkGallery();
   setupGalleryArrows();
   renderProjectPage();
   setupMobileNav();
   alignWordmarkToGridColumn();
-  alignPreviewToGridColumn();
   alignGalleryToGridColumn();
   alignWorkPageElementsToGrid();
   alignHomeSectionsToGrid();
@@ -182,49 +180,17 @@ function runIntroSequence() {
 
 /* ---------- Work photo grid ---------- */
 
-// Replaces the old text list entirely — a 3-column photo grid
-// reusing the exact same card module as the home page's gallery
-// (buildGalleryCard, defined below), just laid out in a plain fluid
-// grid instead of a horizontal infinite-loop carousel. Hovering any
-// card swaps the blueprint preview panel (see showPreview()) — the
-// same interaction the old list rows used to trigger on hover.
+// Replaces the old text list entirely — a photo grid reusing the
+// exact same card module as the home page's gallery (buildGalleryCard,
+// defined below), just laid out in a plain fluid grid instead of a
+// horizontal infinite-loop carousel.
 function renderWorkPhotoGrid() {
   const grid = document.getElementById("work-photo-grid");
   if (!grid || typeof PROJECTS === "undefined") return;
 
-  PROJECTS.forEach((project, index) => {
+  PROJECTS.forEach((project) => {
     const card = buildGalleryCard(project, false);
-    card.addEventListener("mouseenter", () => showPreview(index));
     grid.appendChild(card);
-  });
-
-  // Prime the preview panel with the first project
-  showPreview(0);
-}
-
-/* ---------- Preview panel ---------- */
-
-function setupPreviewPanel() {
-  const grid = document.getElementById("work-photo-grid");
-  if (!grid) return;
-  grid.addEventListener("mouseleave", () => showPreview(0));
-}
-
-function showPreview(index) {
-  const project = PROJECTS[index];
-  const svgHost = document.getElementById("preview-svg");
-  const numEl = document.getElementById("preview-num");
-  const statusEl = document.getElementById("preview-status");
-  if (!project || !svgHost) return;
-
-  svgHost.classList.remove("is-active");
-  svgHost.innerHTML = project.thumb;
-  numEl.textContent = `${project.num} — ${project.title}`;
-  statusEl.textContent = project.status;
-
-  // Trigger the blueprint line-draw animation on the next frame
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => svgHost.classList.add("is-active"));
   });
 }
 
@@ -551,55 +517,12 @@ function getSiteUnit(el) {
   return parseFloat(getComputedStyle(el).getPropertyValue("--site-unit")) || 32;
 }
 
-// Snaps .work-preview's right edge onto a specific lettered column
-// line of the alignment grid ("BC") instead of an arbitrary fluid
-// offset. Column letters run A-Z (0-25), then AA, AB… (26+), then
-// BA, BB, BC… (52+) — "BC" is index 54 (52 + the 2 letters from A to
-// C). Measured live with getBoundingClientRect() rather than a fixed
-// calc(), since the grid's fluid column widths mean the pixel
-// position of "BC" moves as the viewport resizes — a plain CSS value
-// can't track that, only a live measurement can.
-function alignPreviewToGridColumn() {
-  const workPage = document.querySelector(".work-page");
-  const preview = document.querySelector(".work-preview");
-  if (!workPage || !preview) return;
-
-  const BC_COLUMN_INDEX = 54; // A=0 … Z=25, AA=26 … AZ=51, BA=52, BB=53, BC=54
-
-  const alignToColumn = () => {
-    // .work-preview is display:none below the 1400px breakpoint —
-    // getBoundingClientRect() on a hidden element returns all zeros,
-    // which would otherwise compute a nonsense offset; skip until
-    // it's actually visible again.
-    if (getComputedStyle(preview).display === "none") return;
-
-    const GRID_STEP = getSiteUnit(workPage);
-    const pageRect = workPage.getBoundingClientRect();
-    const targetRightEdgeX = pageRect.left + BC_COLUMN_INDEX * GRID_STEP;
-
-    const previewRect = preview.getBoundingClientRect();
-    // .work-preview is now a plain block box (no longer a grid item
-    // with justify-self: end), so it's left-anchored by default —
-    // margin-left shifts its rendered position, margin-right no
-    // longer does anything (confirmed empirically: changing
-    // margin-right produced zero movement once it left the grid;
-    // margin-left moved it immediately).
-    const currentMarginLeft = parseFloat(getComputedStyle(preview).marginLeft) || 0;
-    const delta = targetRightEdgeX - previewRect.right;
-
-    preview.style.marginLeft = `${currentMarginLeft + delta}px`;
-  };
-
-  alignToColumn();
-  window.addEventListener("resize", alignToColumn);
-}
-
 // Snaps the leftmost edge of .work-photo-grid onto lettered column
 // "H" of the alignment grid (index 7: A=0, B=1, C=2, D=3, E=4, F=5,
-// G=6, H=7) — same live-measurement approach as
-// alignPreviewToGridColumn(), for
-// the same reason: the grid's column widths are fluid, so a fixed
-// calc() can't reliably land on an arbitrary lettered line.
+// G=6, H=7), measured live with getBoundingClientRect() rather than a
+// fixed calc(), since the grid's fluid column widths mean the pixel
+// position of "H" moves as the viewport resizes — a plain CSS value
+// can't track that, only a live measurement can.
 function alignGalleryToGridColumn() {
   const workPage = document.querySelector(".work-page");
   const gallery = document.querySelector(".work-photo-grid");
@@ -633,12 +556,10 @@ function alignGalleryToGridColumn() {
 //   - .section-head: left edge -> column H (A=0, B=1, C=2, D=3, E=4,
 //     F=5, G=6, H=7), bottom edge -> row 10
 //   - .work-photo-grid: top edge -> row 12
-//   - .work-preview: top edge -> row 12
 function alignWorkPageElementsToGrid() {
   const workPage = document.querySelector(".work-page");
   const sectionHead = document.querySelector(".section-head");
   const gallery = document.querySelector(".work-photo-grid");
-  const preview = document.querySelector(".work-preview");
   if (!workPage) return;
 
   const H_COLUMN_INDEX = 7; // A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7
@@ -681,11 +602,6 @@ function alignWorkPageElementsToGrid() {
     if (gallery) {
       const galleryRect = gallery.getBoundingClientRect();
       nudgeMargin(gallery, "marginTop", galleryRect.top, targetTopY);
-    }
-
-    if (preview) {
-      const previewRect = preview.getBoundingClientRect();
-      nudgeMargin(preview, "marginTop", previewRect.top, targetTopY);
     }
   };
 
