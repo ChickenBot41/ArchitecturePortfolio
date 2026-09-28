@@ -68,7 +68,7 @@ I explicitly say to change one.
 ### Design rules
 - **Sticky Navigation Bar** — a bar must always be fixed to the top of
   the home page, staying visible while scrolling, containing: the
-  website name, and links to Work, About, and Contact.
+  website name, and links to Work and Contact.
 - **Opaque Navigation Bar** — the navigation bar's background must be
   fully solid (100% opacity) — no page content should show through it.
 - **Two-Font System** — the site uses exactly two font families:
