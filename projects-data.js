@@ -53,22 +53,64 @@ const PROJECTS = [
       "The screen is cut from the same material Pueblo once shipped by rail — sized, this time, to the path of the sun.",
     thumb: `
       <g class="mass">
-        <rect x="50" y="110" width="300" height="18" opacity="0.85" />
-        <rect x="50" y="128" width="300" height="70" opacity="0.35" />
+        <rect x="51" y="71" width="58" height="48" opacity="0.85" />
+        <rect x="111" y="71" width="58" height="48" opacity="0.85" />
+        <rect x="171" y="71" width="58" height="48" opacity="0.85" />
+        <rect x="231" y="71" width="58" height="48" opacity="0.85" />
+        <rect x="291" y="71" width="58" height="48" opacity="0.85" />
+        <rect x="51" y="121" width="58" height="48" opacity="0.85" />
+        <rect x="111" y="121" width="58" height="48" opacity="0.85" />
+        <rect x="171" y="121" width="58" height="48" opacity="0.85" />
+        <rect x="231" y="121" width="58" height="48" opacity="0.85" />
+        <rect x="291" y="121" width="58" height="48" opacity="0.85" />
+        <rect x="51" y="171" width="58" height="48" opacity="0.85" />
+        <rect x="111" y="171" width="58" height="48" opacity="0.85" />
+        <rect x="171" y="171" width="58" height="48" opacity="0.85" />
+        <rect x="231" y="171" width="58" height="48" opacity="0.85" />
+        <rect x="291" y="171" width="58" height="48" opacity="0.85" />
       </g>
       <g class="lines">
-        <rect x="50" y="110" width="300" height="18" />
-        <line x1="80" y1="128" x2="80" y2="220" />
-        <line x1="150" y1="128" x2="150" y2="220" />
-        <line x1="220" y1="128" x2="220" y2="220" />
-        <line x1="290" y1="128" x2="290" y2="220" />
-        <line x1="50" y1="220" x2="350" y2="220" />
-        <path d="M60 90 Q200 40 340 90" stroke-dasharray="4 4" />
-        <circle cx="120" cy="150" r="4" />
-        <circle cx="160" cy="150" r="4" />
-        <circle cx="200" cy="150" r="4" />
-        <circle cx="240" cy="150" r="4" />
-        <circle cx="280" cy="150" r="4" />
+        <path d="M60 55 Q200 20 340 55" stroke-dasharray="4 4" />
+
+        <rect x="50" y="70" width="60" height="50" />
+        <rect x="110" y="70" width="60" height="50" />
+        <rect x="170" y="70" width="60" height="50" />
+        <rect x="230" y="70" width="60" height="50" />
+        <rect x="290" y="70" width="60" height="50" />
+        <rect x="50" y="120" width="60" height="50" />
+        <rect x="110" y="120" width="60" height="50" />
+        <rect x="170" y="120" width="60" height="50" />
+        <rect x="230" y="120" width="60" height="50" />
+        <rect x="290" y="120" width="60" height="50" />
+        <rect x="50" y="170" width="60" height="50" />
+        <rect x="110" y="170" width="60" height="50" />
+        <rect x="170" y="170" width="60" height="50" />
+        <rect x="230" y="170" width="60" height="50" />
+        <rect x="290" y="170" width="60" height="50" />
+
+        <!-- perforation density rises toward the middle panels, tuned to the sun path -->
+        <circle cx="80" cy="95" r="2" />
+        <circle cx="130" cy="95" r="2" /><circle cx="140" cy="95" r="2" /><circle cx="150" cy="95" r="2" />
+        <circle cx="185" cy="88" r="2" /><circle cx="200" cy="88" r="2" /><circle cx="215" cy="88" r="2" />
+        <circle cx="185" cy="102" r="2" /><circle cx="200" cy="102" r="2" /><circle cx="215" cy="102" r="2" />
+        <circle cx="250" cy="95" r="2" /><circle cx="260" cy="95" r="2" /><circle cx="270" cy="95" r="2" />
+        <circle cx="320" cy="95" r="2" />
+
+        <circle cx="80" cy="145" r="2" />
+        <circle cx="130" cy="145" r="2" /><circle cx="140" cy="145" r="2" /><circle cx="150" cy="145" r="2" />
+        <circle cx="185" cy="138" r="2" /><circle cx="200" cy="138" r="2" /><circle cx="215" cy="138" r="2" />
+        <circle cx="185" cy="152" r="2" /><circle cx="200" cy="152" r="2" /><circle cx="215" cy="152" r="2" />
+        <circle cx="250" cy="145" r="2" /><circle cx="260" cy="145" r="2" /><circle cx="270" cy="145" r="2" />
+        <circle cx="320" cy="145" r="2" />
+
+        <circle cx="80" cy="195" r="2" />
+        <circle cx="130" cy="195" r="2" /><circle cx="140" cy="195" r="2" /><circle cx="150" cy="195" r="2" />
+        <circle cx="185" cy="188" r="2" /><circle cx="200" cy="188" r="2" /><circle cx="215" cy="188" r="2" />
+        <circle cx="185" cy="202" r="2" /><circle cx="200" cy="202" r="2" /><circle cx="215" cy="202" r="2" />
+        <circle cx="250" cy="195" r="2" /><circle cx="260" cy="195" r="2" /><circle cx="270" cy="195" r="2" />
+        <circle cx="320" cy="195" r="2" />
+
+        <line x1="50" y1="230" x2="350" y2="230" />
       </g>`,
   },
   {
