@@ -531,26 +531,6 @@ ol { padding: 0; list-style: none; }
   margin-top: calc(var(--space-7) * 2);
 }
 
-/* work.html-only left gutter — a fluid clamp(), same 5vw scaling
-   rate as the shared --gutter token, but with its own floor/ceiling:
-   never smaller than 2 grid units (64px), never bigger than 8 grid
-   units (256px). Overrides the shared --gutter token so this page's
-   inset can be tuned independently of every other page. Scoped
-   under .work-page so this doesn't touch the home page's Work
-   section.
-
-   margin-left: 0 / margin-right: auto (instead of the auto/auto
-   centering both .section-head and .work-layout use elsewhere)
-   collapses the leftover space outside the 1240px max-width column
-   onto the right side only, so on very wide screens this content
-   hugs the left edge instead of floating a huge gap in from it. */
-.work-page .section-head,
-.work-page .work-layout {
-  padding-left: clamp(calc(var(--space-7) * 2), 5vw, calc(var(--space-7) * 8));
-  margin-left: 0;
-  margin-right: auto;
-}
-
 /* Replaces the old text list entirely — a photo grid reusing the
    exact same .gallery-card module (image, name/date caption,
    black-to-color hover) as the home page's carousel, just laid out
@@ -563,12 +543,6 @@ ol { padding: 0; list-style: none; }
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--site-unit);
-  /* frees this from the grid's default "stretch" alignment, which
-     otherwise rigidly pins a grid item to fill its column and
-     silently ignores margin adjustments entirely. Needed here so
-     alignGalleryToGridColumn() in main.js can actually shift this
-     via margin-left. */
-  justify-self: start;
   list-style: none;
   padding: 0;
   margin: 0;

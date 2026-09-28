@@ -26,7 +26,6 @@ document.addEventListener("DOMContentLoaded", () => {
   renderProjectPage();
   setupMobileNav();
   alignWordmarkToGridColumn();
-  alignGalleryToGridColumn();
   alignWorkPageElementsToGrid();
   alignHomeSectionsToGrid();
   document.getElementById("year").textContent = new Date().getFullYear();
@@ -517,44 +516,18 @@ function getSiteUnit(el) {
   return parseFloat(getComputedStyle(el).getPropertyValue("--site-unit")) || 32;
 }
 
-// Snaps the leftmost edge of .work-photo-grid onto lettered column
-// "H" of the alignment grid (index 7: A=0, B=1, C=2, D=3, E=4, F=5,
-// G=6, H=7), measured live with getBoundingClientRect() rather than a
-// fixed calc(), since the grid's fluid column widths mean the pixel
-// position of "H" moves as the viewport resizes — a plain CSS value
-// can't track that, only a live measurement can.
-function alignGalleryToGridColumn() {
-  const workPage = document.querySelector(".work-page");
-  const gallery = document.querySelector(".work-photo-grid");
-  if (!workPage || !gallery) return;
-
-  const H_COLUMN_INDEX = 7; // A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7
-
-  const alignToColumn = () => {
-    const GRID_STEP = getSiteUnit(workPage);
-    const pageRect = workPage.getBoundingClientRect();
-    const targetLeftEdgeX = pageRect.left + H_COLUMN_INDEX * GRID_STEP;
-
-    const galleryRect = gallery.getBoundingClientRect();
-    const currentMarginLeft = parseFloat(getComputedStyle(gallery).marginLeft) || 0;
-    const delta = targetLeftEdgeX - galleryRect.left;
-
-    gallery.style.marginLeft = `${currentMarginLeft + delta}px`;
-  };
-
-  alignToColumn();
-  window.addEventListener("resize", alignToColumn);
-}
-
-// Snaps four more elements onto specific lettered/numbered alignment
-// grid lines, the same live-measured way as the two functions above
+// Snaps two elements onto specific numbered alignment grid rows, the
+// same live-measured margin technique used throughout this file
 // (margin, not top/left/right — a sticky element's inset properties
 // only define its scroll-stuck threshold, they don't shift its
-// static/resting position the way margin does; see
-// alignPreviewToGridColumn()'s notes on justify-self for the
-// horizontal-axis version of this same lesson):
-//   - .section-head: left edge -> column H (A=0, B=1, C=2, D=3, E=4,
-//     F=5, G=6, H=7), bottom edge -> row 10
+// static/resting position the way margin does). Horizontal position
+// for both is left to ordinary centered CSS (.section-head and
+// .work-layout's own max-width + margin: 0 auto) instead of being
+// pinned to a lettered column — pinning the gallery's left edge to a
+// fixed column while .work-layout centers on max-width independently
+// used to leave a lopsided gap on wide viewports, wider on the right
+// than the left.
+//   - .section-head: bottom edge -> row 10
 //   - .work-photo-grid: top edge -> row 12
 function alignWorkPageElementsToGrid() {
   const workPage = document.querySelector(".work-page");
@@ -562,7 +535,6 @@ function alignWorkPageElementsToGrid() {
   const gallery = document.querySelector(".work-photo-grid");
   if (!workPage) return;
 
-  const H_COLUMN_INDEX = 7; // A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7
   const ROW_10_INDEX = 9; // row label "10" sits at i=9 (labels are 1-based)
   const ROW_12_INDEX = 11; // row label "12" sits at i=11
 
@@ -576,30 +548,13 @@ function alignWorkPageElementsToGrid() {
     const pageRect = workPage.getBoundingClientRect();
 
     if (sectionHead) {
-      // .section-head has its own padding-left (a fluid clamp, see
-      // .work-page .section-head in styles.css) — snapping the box's
-      // own left edge to column H would still leave the actual
-      // visible text sitting padding-left further right, looking
-      // unaligned even though the box technically lines up. Target
-      // where the text starts (box left + padding-left) instead.
-      const paddingLeft = parseFloat(getComputedStyle(sectionHead).paddingLeft) || 0;
-      const targetTextStartX = pageRect.left + H_COLUMN_INDEX * GRID_STEP;
-      const targetBoxLeftX = targetTextStartX - paddingLeft;
-      const headRect = sectionHead.getBoundingClientRect();
-      nudgeMargin(sectionHead, "marginLeft", headRect.left, targetBoxLeftX);
-
-      // re-measure after the horizontal nudge — a left shift alone
-      // shouldn't move the bottom edge, but the two are set via
-      // separate inline styles, so measuring fresh avoids relying on
-      // that assumption
       const targetBottomY = pageRect.top + ROW_10_INDEX * GRID_STEP;
-      const headRectAfter = sectionHead.getBoundingClientRect();
-      nudgeMargin(sectionHead, "marginTop", headRectAfter.bottom, targetBottomY);
+      const headRect = sectionHead.getBoundingClientRect();
+      nudgeMargin(sectionHead, "marginTop", headRect.bottom, targetBottomY);
     }
 
-    const targetTopY = pageRect.top + ROW_12_INDEX * GRID_STEP;
-
     if (gallery) {
+      const targetTopY = pageRect.top + ROW_12_INDEX * GRID_STEP;
       const galleryRect = gallery.getBoundingClientRect();
       nudgeMargin(gallery, "marginTop", galleryRect.top, targetTopY);
     }
