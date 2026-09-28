@@ -554,15 +554,14 @@ ol { padding: 0; list-style: none; }
 /* Replaces the old text list entirely — a photo grid reusing the
    exact same .gallery-card module (image, name/date caption,
    black-to-color hover) as the home page's carousel, just laid out
-   as a plain wrapping grid instead of a horizontal scroller. Cards
-   are sized in --site-unit (8 units per card, 1 unit gap) so they
-   grow/shrink fluidly with the same one scale everything else on
-   this page uses; auto-fill lets as many fit per row as the
-   available width allows, so the grid fills the full work-layout
-   column now that there's no side preview panel sharing the space. */
+   as a plain wrapping grid instead of a horizontal scroller. Fixed at
+   3 equal-width (1fr) columns instead of a fluid auto-fill count, so
+   each card always stretches to exactly a third of the row — no
+   leftover gap on the right from cards that don't evenly divide the
+   available width. */
 .work-photo-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(calc(var(--site-unit) * 8), 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--site-unit);
   /* frees this from the grid's default "stretch" alignment, which
      otherwise rigidly pins a grid item to fill its column and
